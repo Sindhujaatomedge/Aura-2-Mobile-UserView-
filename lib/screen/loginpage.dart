@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sampleaura/screen/leaverequest.dart';
 
 import '../model/loginmodel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -293,7 +294,7 @@ class _LoginpageState extends State<Loginpage> {
 
           // Navigator.push(context, MaterialPageRoute(builder: (context) => HolidayPage()));
           // Navigator.push(context, MaterialPageRoute(builder: (context) => Homepage(email)));
-           Navigator.push(context, MaterialPageRoute(builder: (context) => Homepage()));
+           Navigator.push(context, MaterialPageRoute(builder: (context) => Leaverequest()));
           // Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateDepartment()));
 
 
@@ -879,7 +880,8 @@ class _LoginpageState extends State<Loginpage> {
                 SizedBox(height: 5,),
                 Padding(
                   padding: const EdgeInsets.all(17.0),
-                  child: ConstrainedBox(
+                  child:
+                  ConstrainedBox(
                     constraints: BoxConstraints.tightFor(width: 340, height: 52),
                     child: ElevatedButton.icon(
 
