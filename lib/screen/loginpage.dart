@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sampleaura/helper/app_constant.dart';
 import 'package:sampleaura/screen/leaverequest.dart';
 
 import '../model/loginmodel.dart';
@@ -43,9 +44,6 @@ class _LoginpageState extends State<Loginpage> {
     _focusNode.dispose(); // Dispose the FocusNode to avoid memory leaks
     super.dispose();
   }
-
-
-
   String _countryError ='The phone number Must be Country Code + valid';
   int valuecount =0;
   int specialCount =0;
@@ -59,10 +57,7 @@ class _LoginpageState extends State<Loginpage> {
     _phoneNumberError='';
     _password='';
     _message='';
-
-
   }
-
   void handleApiErrors(Map<String, dynamic> errors) {
     setState(() {
 
@@ -133,11 +128,12 @@ class _LoginpageState extends State<Loginpage> {
           emailaddress: _emailController.text
       );
 
-      // final url = Uri.parse('http://3.110.95.121:8080/verify-identifier');
-      final url = Uri.parse('http://192.168.29.232:8080/verify-identifier');
+   //   final url = Uri.parse('http://3.110.95.121:8080/verify-identifier');
+    // final url = Uri.parse('http://192.168.29.232:8080/verify-identifier');
+
+      final url = AppConstant().verifyidentifier;
       try {
-        final response = await http.post(
-          url,
+        final response = await http.post(Uri.parse(url),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -172,31 +168,16 @@ class _LoginpageState extends State<Loginpage> {
           setState(() {
             showTextField = true;
           });
-
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //        SnackBar(content: Text(response.body)),
-          //      );
-
-
-
         } else if(response.statusCode == 400) {
           final Map<String,dynamic> errors = json.decode(response.body);
-          // print(errors);
-          // String messageString = errors['message'];
-          // print("messageString:");
-          // print(messageString);
+
           setState(() {
             handleApiErrors(errors);
           });
-          // print(response.body);
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(content: Text(response.body)),
-          // );
+
         }
       } catch (e) {
-        // ScaffoldMessenger.of(context).showSnackBar(
-        //   SnackBar(content: Text('Error: $e')),
-        // );
+
       }
     }
   }
@@ -210,11 +191,11 @@ class _LoginpageState extends State<Loginpage> {
         emailaddress: _emailController.text,
         password: _passwordController.text,
       );
-      // final url = Uri.parse('http://100.24.56.198:8080/login');
-      final url = Uri.parse('http://192.168.29.232:8080/login');
+     //  final url = Uri.parse('http://3.110.95.121:8080/login');
+     // final url = Uri.parse('http://192.168.29.232:8080/login');
+      final url = AppConstant().login;
       try {
-        final response = await http.post(
-          url,
+        final response = await http.post(Uri.parse(url),
           headers: {
             'Content-Type': 'application/json',
           },
@@ -231,12 +212,9 @@ class _LoginpageState extends State<Loginpage> {
 
           setState(() {
             showTextField = true;
-            handleApiErrors(message);
+            //handleApiErrors(message);
           });
 
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(content: Text(response.body)),
-          // );
           print(_tokenModel.orgid);
 
 
@@ -258,9 +236,7 @@ class _LoginpageState extends State<Loginpage> {
             _tokenModel.accessToken=accessToken;
             _tokenModel.refreshToken =refreshToken;
           });
-          print("token");
-          print(_tokenModel.accessToken );
-          print(_tokenModel.refreshToken);
+
 
           // Save tokens to SharedPreferences
           final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -273,12 +249,6 @@ class _LoginpageState extends State<Loginpage> {
           // Retrieve tokens from SharedPreferences (Optional)
           String? savedAccessToken = prefs.getString('access_token');
           String? savedRefreshToken = prefs.getString('refresh_token');
-
-
-          print('Saved Access Token: $savedAccessToken');
-          print('Saved Refresh Token: $savedRefreshToken');
-
-
           String email= _emailController.text.split('@').first;
           print(email);
           await prefs.setString('emailname', email);
@@ -287,14 +257,12 @@ class _LoginpageState extends State<Loginpage> {
           _loginkey.currentState?.reset();
           clear();
           showTextField=false;
-          // setState(() {
-          //   clear();
-          // });
+
 
 
           // Navigator.push(context, MaterialPageRoute(builder: (context) => HolidayPage()));
           // Navigator.push(context, MaterialPageRoute(builder: (context) => Homepage(email)));
-           Navigator.push(context, MaterialPageRoute(builder: (context) => Leaverequest()));
+           Navigator.push(context, MaterialPageRoute(builder: (context) => Homepage(email)));
           // Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateDepartment()));
 
 
@@ -442,7 +410,8 @@ class _LoginpageState extends State<Loginpage> {
 
                 ),
                 SizedBox(height: 20,),
-                const Row(children: [
+                const
+                Row(children: [
                   Flexible(child: Padding(
                     padding: EdgeInsets.all(8.0),
                     child: Divider(indent: 4,endIndent: 4,color: Color(0xFFF2F4F7),thickness: 1,),
@@ -593,6 +562,9 @@ class _LoginpageState extends State<Loginpage> {
                                 fontFamily: 'Poppins', // Customize font family if needed
                               ),
                               validator: (value) {
+                                if (_message.isNotEmpty) {
+                                  return _message;
+                                }
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter an email address';
                                 }
@@ -600,6 +572,7 @@ class _LoginpageState extends State<Loginpage> {
                                 if (!emailPattern.hasMatch(value)) {
                                   return 'Please enter a valid email address';
                                 }
+
                                 return null;
                               },
                               onChanged: (value) {

@@ -30,11 +30,9 @@ class _DashboardState extends StateMVC<Dashboard> {
 
   }
 
-  List<String>title = ['Attendance Today','Leaving this Month','Feedbacks Today','This Year Turnover Rate'];
-  List<String>value = ['450','15','350','30'];
-  List<double>percentage = [0.9,0.1,0.75,0.6];
-  List<Color>backgroundColor =[Color(0xFFF0FDF7),Color(0xFFFEF7F7),Color(0xFFF0F6FF),Color(0xFFFDFBF1)];
-  List<Color>progressColor =[Color(0xFF99CCB0),Color(0xFFF07575),Color(0xFF72A9F3),Color(0xFFD8C38C)];
+  List<String>title = ['Attendance Today','Attrition of this Month','Feedbacks Today','This Year Attrition Rate'];
+
+
   List<ChartData> chartData = [
     ChartData('2024-12-23', 1),
     ChartData('2024-12-24', 10),
@@ -82,13 +80,14 @@ class _DashboardState extends StateMVC<Dashboard> {
 
     
   ];
- 
+
   List<String>department = ['Finance','Management','Support','Marketing'];
   List<int>male = [50,60,30,20];
   List<int>female = [50,40,70,80];
   List<double>feedbackpercentage = [0.9,0.7,0.3];
   List<Color>feedbackprogressColor =[Color(0xFF9795BD),Color(0xFFD4BDAC),Color(0xFF92B0C6)];List<String>feedbacktitle = ['Happy','Moderate','Sad',];
-
+List<double> percentage =[];
+List<int>? value  =[];
   @override
   void initState() {
     // TODO: implement initState
@@ -99,6 +98,12 @@ class _DashboardState extends StateMVC<Dashboard> {
     _loadLeaveReportData();
     _loadEmployeeTenureData();
     _loadEmployeeSatisfactionData();
+    _loadEmployeeHeadCountData();
+    _loadEmployeePresentEmployee();
+    _loadEmployeeLeavingCount();
+    _loadEmployeeFeedBackCount();
+    _loadEmployeeTurnoverCount();
+
 }
  Future<void> _loadAttendanceData() async {
    await managehomeController?.fetchAttendanceData(); // Wait for data to be fetched
@@ -120,8 +125,55 @@ class _DashboardState extends StateMVC<Dashboard> {
     await managehomeController?.fetchSatisfactionData(); // Wait for data to be fetched
     print('Satisfaction Data : ${managehomeController?.employeeSatisfactionData.length}'); // Safely access after fetching
   }
+  Future<void>_loadEmployeeHeadCountData()async {
+    await managehomeController?.fetchHeadCountData(); // Wait for data to be fetched
+    print('Satisfaction Data : ${managehomeController?.employeeheadcount.length}'); // Safely access after fetching
+  }
+  Future<void>_loadEmployeeLeavingCount()async {
+    await managehomeController?.fetchEmployeeLeavingCount(); // Wait for data to be fetched
+    print('Employeleavethismonth Data : ${managehomeController?.employeleavethismonth?.count}'); // Safely access after fetching
+    print('Employeleavethismonth Data : ${managehomeController?.employeleavethismonth?.percentage}'); // Safely access after fetching
+  }
+  Future<void>_loadEmployeeFeedBackCount()async {
+    await managehomeController?.fetchFeedBacktotal(); // Wait for data to be fetched
+    print('Satisfaction Data : ${managehomeController?.feedbacktotal?.totalfeedbackcount}'); // Safely access after fetching
+  }
+  Future<void>_loadEmployeeTurnoverCount()async {
+    await managehomeController?.fetchEmployeeTurnover(); // Wait for data to be fetched
+    print('TurnOver : ${managehomeController?.turnover?.percentage}'); // Safely access after fetching
+  }
 
 
+  Future<void> _loadEmployeePresentEmployee() async {
+    setState(() {
+      value =[0,0,0,0];
+    });
+    print('Initial Value List: $value');
+    // Call other methods
+    await _loadEmployeeFeedBackCount();
+    await _loadEmployeeLeavingCount();
+    await managehomeController?.fetchPresenttodaycount();
+    percentage = [
+      (managehomeController?.presenttodaycount?.percentage ?? 0) / 100,
+      (managehomeController?.employeleavethismonth?.percentage ?? 0) / 100,
+      (managehomeController?.feedbacktotal?.totalfeedbackpercentage ?? 0) / 100,
+      (managehomeController?.turnover?.percentage ?? 0) / 100,
+
+    ];
+    print('Percentage List: $percentage');
+    setState(() {
+      value = [
+        managehomeController?.presenttodaycount?.totalpresentcount ?? 0,
+        managehomeController?.employeleavethismonth?.count ?? 0,
+        managehomeController?.feedbacktotal?.totalfeedbackcount ?? 0,
+        managehomeController?.turnover?.totalempleavingthisyear ?? 0,
+
+      ];
+    });
+    print('Value List: $value');
+  }
+  List<Color>backgroundColor =[Color(0xFFF0FDF7),Color(0xFFFEF7F7),Color(0xFFF0F6FF),Color(0xFFFDFBF1)];
+  List<Color>progressColor =[Color(0xFF99CCB0),Color(0xFFF07575),Color(0xFF72A9F3),Color(0xFFD8C38C)];
 
   @override
   Widget build(BuildContext context) {
@@ -145,21 +197,23 @@ class _DashboardState extends StateMVC<Dashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
+              padding:  EdgeInsets.symmetric(horizontal: 10.0, vertical: 5.0),
               child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
+                physics:  NeverScrollableScrollPhysics(),
                 shrinkWrap: true,
                 itemCount: 4,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
                   mainAxisExtent: 130,
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),
                 itemBuilder: (BuildContext context, int index) {
-                  return AttendanceCard(
+                  return  managehomeController!.isLoading ? Container(
+                    child: Center(child: CircularProgressIndicator()),
+                  ) :AttendanceCard(
                     title: title[index],
-                    count: value[index],
+                    count: value![index].toString() ,
                     percentage: percentage[index],
                     backgroundColor: backgroundColor[index],
                     progressColor:progressColor[index],
@@ -219,14 +273,14 @@ class _DashboardState extends StateMVC<Dashboard> {
                                     ],
                                   )
                                 ],
-                              ),
+                              ), managehomeController!.attendanceData.isNotEmpty?
                               Flexible(
                                 child: SfCartesianChart(
                                   plotAreaBorderWidth: 0,
                                   plotAreaBackgroundColor: Colors.transparent,
                                   plotAreaBorderColor: Colors.transparent,
                                   primaryYAxis: const NumericAxis(
-                                    interval: 2,
+                                    interval: 1,
                                     majorGridLines: MajorGridLines(width: 0),
                                     minorGridLines: MinorGridLines(width: 0),
                                     axisLine: AxisLine(width: 0),
@@ -260,7 +314,10 @@ class _DashboardState extends StateMVC<Dashboard> {
                                     ),
                                   ],
                                 ),
-                              ),
+                              ) : Padding(
+                      padding: const EdgeInsets.only(top:60.0,left: 20),
+                      child: Text("Attendance records are on their way—stay tuned!",style: TextStyle(fontFamily: 'Poppins',color: Colors.grey.shade400),),
+                    ),
                             ],
 
                           )
@@ -301,6 +358,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                         child: Text("Head Count",style: TextStyle(fontFamily: 'Poppins',fontSize:14 ),),
                       ),
                       SizedBox(height: 10,),
+                      managehomeController!.employeeheadcount.isNotEmpty?
                       Flexible(
                         child: GridView.builder(
                           scrollDirection: Axis.horizontal,
@@ -313,8 +371,9 @@ class _DashboardState extends StateMVC<Dashboard> {
                               mainAxisExtent: 170
 
                           ),
-                          itemCount: 4,
+                          itemCount: managehomeController?.employeeheadcount.length,
                           itemBuilder: (context, index) {
+                            var headcountdata = managehomeController?.employeeheadcount[index];
                             return
                               Padding(
                                 padding: const EdgeInsets.all(8.0),
@@ -341,7 +400,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(top:20.0,left: 15),
-                                              child: Text(department[index],style: TextStyle(fontSize: 12,color: Color(0xFF1D2939),fontFamily: 'Poppins'),),
+                                              child: Text(headcountdata!.department!,style: TextStyle(fontSize: 12,color: Color(0xFF1D2939),fontFamily: 'Poppins'),),
                                             ),
                                             SizedBox(height: 20,),
                                             Padding(
@@ -353,7 +412,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                                   crossAxisAlignment: CrossAxisAlignment.stretch,
                                                   children: [
                                                     Expanded(
-                                                        flex: male[index],
+                                                        flex: headcountdata.malecount!,
                                                         child: Container(
                                                           height: 20,
                                                           decoration: BoxDecoration(
@@ -363,7 +422,7 @@ class _DashboardState extends StateMVC<Dashboard> {
 
                                                         )),
                                                     Expanded(
-                                                        flex: female[index],
+                                                        flex: headcountdata.femalecount!,
                                                         child: Container(
                                                           decoration: BoxDecoration(
                                                               color: Color(0xFFD4BDAC),
@@ -393,7 +452,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                                       SizedBox(width:5,),
                                                       Text('Male',style: TextStyle(fontSize: 10,fontFamily: 'Poppins',),),
                                                       SizedBox(width: 59,),
-                                                      Text(male[index].toString(),style: TextStyle(fontFamily: 'Poppins',fontSize: 10,fontWeight: FontWeight.w500),)
+                                                      Text(headcountdata.malecount.toString(),style: TextStyle(fontFamily: 'Poppins',fontSize: 10,fontWeight: FontWeight.w500),)
                                                     ],
                                                   ),
                                                   SizedBox(height: 8,),
@@ -411,7 +470,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                                       SizedBox(width:5,),
                                                       Text('Female',style: TextStyle(fontSize: 10,fontFamily: 'Poppins',),),
                                                       SizedBox(width: 45,),
-                                                      Text(female[index].toString(),style: TextStyle(fontFamily: 'Poppins',fontSize: 10,fontWeight: FontWeight.w500),)
+                                                      Text(headcountdata.femalecount.toString(),style: TextStyle(fontFamily: 'Poppins',fontSize: 10,fontWeight: FontWeight.w500),)
                                                     ],
                                                   )
                                                 ],
@@ -427,6 +486,9 @@ class _DashboardState extends StateMVC<Dashboard> {
                               );
                           },
                         ),
+                      ): Padding(
+                        padding: const EdgeInsets.only(top:60.0,left: 20),
+                        child: Text("The headcount refresh is incoming—gear up to check it out!",style: TextStyle(fontFamily: 'Poppins',color: Colors.grey.shade400),),
                       ),
                     ],
                   ),
@@ -575,7 +637,7 @@ class _DashboardState extends StateMVC<Dashboard> {
 
                                   ],
                                 ),
-                                Stack(
+                                managehomeController!.ageDistributionData.isNotEmpty ?Stack(
                                   children: [
                                     Positioned(
                                       top:60,
@@ -632,7 +694,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                           child: Padding(
                                             padding: const EdgeInsets.only(left: 8.0,),
                                             child: ListView.builder(
-                                              itemCount :4,
+                                              itemCount :managehomeController!.ageDistributionData.length,
                                                 physics: const NeverScrollableScrollPhysics(),
                                               itemBuilder: (BuildContext context, int index) {
                                                 var agedata  = managehomeController?.ageDistributionData[index];
@@ -650,7 +712,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                                         ),
                                                       ),
                                                       SizedBox(width: 5,),
-                                                      Text(agedata!.age_group!,style: TextStyle(fontFamily: 'Poppins',fontSize: 10),)
+                                                      Text(agedata.age_group!,style: TextStyle(fontFamily: 'Poppins',fontSize: 10),)
                                                     ],
                                                   ),
                                                 );
@@ -664,6 +726,9 @@ class _DashboardState extends StateMVC<Dashboard> {
                                   ],
 
 
+                                ) : Padding(
+                                  padding: const EdgeInsets.only(top:60.0,left: 20),
+                                  child: Text("Get ready! Age distribution insights are on their way!",style: TextStyle(fontFamily: 'Poppins',color: Colors.grey.shade400),),
                                 ),
                               ],
 
@@ -712,6 +777,7 @@ class _DashboardState extends StateMVC<Dashboard> {
 
                                   ],
                                 ),
+                                managehomeController!.leavereportData.isNotEmpty?
                                 SizedBox(
                                   width: 340,
                                   height: 140,
@@ -720,10 +786,10 @@ class _DashboardState extends StateMVC<Dashboard> {
                                     child: ListView.builder(
                                       shrinkWrap: true,
                                       physics: const NeverScrollableScrollPhysics(),
-                                      itemCount: 4,
+                                      itemCount: managehomeController?.leavereportData.length,
                                       itemBuilder: (BuildContext context, int index) {
                                         var leavereport = managehomeController?.leavereportData[index];
-                                        return Flexible(
+                                        return  Flexible(
                                           child:
                                           Padding(
                                             padding: const EdgeInsets.only(top:7.0,bottom: 10),
@@ -741,7 +807,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                                       barRadius: Radius.circular(10),
                                                       progressColor:leavereport.color?[index],
                                                     ),
-                                                    Text('${leavereport!.absentemployeecount_by_leavetype!} / ${leavereport!.total_absent_employee_count!}',style: TextStyle(fontSize: 10,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)
+                                                    Text('${leavereport.absentemployeecount_by_leavetype!} / ${leavereport!.total_absent_employee_count!}',style: TextStyle(fontSize: 10,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)
                                                   ],
                                                 ),
 
@@ -754,6 +820,9 @@ class _DashboardState extends StateMVC<Dashboard> {
 
                                     ),
                                   ),
+                                ):Padding(
+                                  padding: const EdgeInsets.only(top:60.0,left: 20),
+                                  child: Text("Get ready! The leave report and updates are almost here!",style: TextStyle(fontFamily: 'Poppins',color: Colors.grey.shade400),),
                                 ),
 
                                 SizedBox(
@@ -840,7 +909,7 @@ class _DashboardState extends StateMVC<Dashboard> {
                                       child: Text("Satisfaction Report",style: TextStyle(fontSize: 14,color: Color(0xFF1D2939),fontFamily: 'Poppins'),),
                                     ),
                                   ],
-                                ),
+                                ),managehomeController!.employeeSatisfactionData.isNotEmpty?
                                 Expanded(child:   GridView.builder(scrollDirection: Axis.horizontal,
                                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1,crossAxisSpacing: 2,mainAxisExtent: 100),
                                   itemCount: managehomeController?.employeeSatisfactionData.length,
@@ -875,7 +944,10 @@ class _DashboardState extends StateMVC<Dashboard> {
                                   },
 
 
-                                ))
+                                )) : Padding(
+                                  padding: const EdgeInsets.only(top:60.0,left: 20),
+                                  child: Text("The satisfaction report is heading your way!",style: TextStyle(fontFamily: 'Poppins',color: Colors.grey.shade400),),
+                                ),
 
 
 
@@ -927,6 +999,7 @@ class _DashboardState extends StateMVC<Dashboard> {
 
                                   ],
                                 ),
+                      managehomeController!.employeeTenureData.isNotEmpty?
                       Flexible(
                         child: SfCartesianChart(
                           plotAreaBorderWidth: 0,
@@ -992,6 +1065,9 @@ class _DashboardState extends StateMVC<Dashboard> {
                           // Legend
                           legend: Legend(isVisible: true, position: LegendPosition.bottom),
                         ),
+                      ) : Padding(
+                        padding: const EdgeInsets.only(top:60.0,left: 20),
+                        child: Text("The EmployeeTenure report is heading your way!",style: TextStyle(fontFamily: 'Poppins',color: Colors.grey.shade400),),
                       ),
 
                               ],

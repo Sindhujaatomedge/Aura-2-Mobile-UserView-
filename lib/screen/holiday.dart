@@ -42,7 +42,9 @@ class _SelfHolidayState extends StateMVC<SelfHoliday> {
     return Material(
       child: Scaffold(
         appBar: AppBar(title: Text('Holidays',style: TextStyle(fontFamily: 'Poppins',fontSize: 20,fontWeight:FontWeight.w500),),
-        leading: Icon(Icons.arrow_back_ios),),
+        leading: InkWell(child: Icon(Icons.arrow_back_ios),onTap: (){
+          Navigator.pop(context);
+        },),),
         body: DefaultTabController(length: 3, child: Column(
           children: [
             Expanded(

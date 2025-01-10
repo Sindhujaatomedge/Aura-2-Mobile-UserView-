@@ -84,6 +84,8 @@ class AttendanceController extends ControllerMVC {
     });
     repository.fetchResponseRequestData().then((value){
       print(value?.length);
+      List<AttendanceRequestLog>? requestattendancedata = value;
+      requestattendancelistlog= requestattendancedata!;
 
       setState((){
         List<AttendanceRequestLog>? requestattendancedata = value;

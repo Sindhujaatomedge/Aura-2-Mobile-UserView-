@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 class AttendanceCard extends StatelessWidget {
-  final String title;
-  final String count;
-  final double percentage;
-  final Color progressColor;
-  final Color backgroundColor;
-  final double elevation; // New property for elevation
+   String title;
+   String count;
+   double percentage;
+   Color progressColor;
+   Color backgroundColor;
+  double elevation; // New property for elevation
 
-  const AttendanceCard({
+  AttendanceCard({
     Key? key,
     required this.title,
     required this.count,
@@ -43,10 +43,10 @@ class AttendanceCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 8.0, top: 8.0),
+              padding:  EdgeInsets.only(left: 8.0, top: 8.0),
               child: Text(
                 title,
-                style: const TextStyle(
+                style:  TextStyle(
                   fontSize: 12,
                   color: Color(0xFF1D2939),
                   fontFamily: 'Poppins',
@@ -55,10 +55,10 @@ class AttendanceCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 17.0, top: 4),
+              padding:  EdgeInsets.only(left: 17.0, top: 4),
               child: Text(
                 count,
-                style: const TextStyle(
+                style:  TextStyle(
                   fontSize: 20,
                   fontFamily: 'Poppins',
                   color: Color(0xFF000000),
@@ -68,7 +68,7 @@ class AttendanceCard extends StatelessWidget {
             Align(
               alignment: Alignment.bottomRight,
               child: Padding(
-                padding: const EdgeInsets.only(right: 15.0, top: 4.0),
+                padding:  EdgeInsets.only(right: 15.0, top: 4.0),
                 child:
                 CircularPercentIndicator (
                   startAngle: 0,

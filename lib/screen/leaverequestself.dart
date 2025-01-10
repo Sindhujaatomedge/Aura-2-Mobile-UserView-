@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
+import 'package:sampleaura/controller/homapage.dart';
 import 'package:sampleaura/model/dropdown/leavetype.dart';
 import 'package:sampleaura/model/dropdown/member.dart';
 import 'package:sampleaura/model/request/leaverequest.dart';
@@ -24,6 +25,7 @@ class SelfLeaveRequest extends StatefulWidget {
 
 class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
   LeaveRequestController? _con = null;
+  HomePageController? homepagecontroller = null;
   ScrollController scrollController = ScrollController();
   bool isExtended = true;
   final List<String> items = ["Item 1", "Item 2", "Item 3", "Item 4"];
@@ -41,18 +43,29 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
   List<LeaveTypeDropdownValue> leavetype = [];
   List<MemberDropdown> membervalue= [];
   final _leaveformkey = GlobalKey<FormState>();
+
   final _editleaveformkey = GlobalKey<FormState>();
   String? leaveid;
   LeaveRequestModel _leaveRequestModel = LeaveRequestModel();
   String? modalSelectedItem;
-  String? modalSelectedItems;
+  String? modalSelectedItems = 'half';
   String? modalSelected;
   bool edit =false;
-
-  _SelfLeaveRequestState() : super(LeaveRequestController()) {
-    _con = controller as LeaveRequestController?;
-  }
-
+  bool? create = false;
+  bool? leaveedit = false;
+  bool? leavedelete = false;
+  //
+  // _SelfLeaveRequestState() : super(LeaveRequestController()) {
+  //   _con = controller as LeaveRequestController?;
+  // }
+   _SelfLeaveRequestState() : super (){
+     _con = LeaveRequestController();
+     homepagecontroller = HomePageController();
+   }
+  // _HomepageState() : super(){
+  //   attendanceController = AttendanceController();
+  //   homePageController = HomePageController();
+  // }
   final Map<String, String> leaveTypeImageMap = {
     'Sick leave': 'assets/images/Vector.png',
     'Casual Leave': 'assets/images/beach2.png'
@@ -71,6 +84,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
     _loadmember();
     DateTime.now();
     print(_con?.leaveuserdata.length);
+    _loadpermission();
 
     // Add listener to scroll controller to detect scroll direction
     scrollController.addListener(() {
@@ -90,6 +104,16 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
         }
       }
     });
+  }
+  Future<void> _loadpermission()async {
+    await homepagecontroller?.fetchrolepermission();
+    print(homepagecontroller?.permission?.permission?.self);
+    //print(homepagecontroller?.create);
+    create = homepagecontroller!.create;
+    leaveedit = homepagecontroller!.edit;
+    leavedelete = homepagecontroller!.delete;
+    print(create);
+
   }
   String capitalize(String input) {
     if (input.isEmpty) return input;
@@ -326,9 +350,10 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
         floatingActionButton: AnimatedSwitcher(
           duration: const Duration(milliseconds: 100),
           child: isExtended
-              ? FloatingActionButton.extended(
+              ? create! ?
+          FloatingActionButton.extended(
                   backgroundColor: Color(0xFF004AAD),
-                  onPressed: () {
+            onPressed:  () {
                     _fromdateController.text ='';
                     _todateController.text = '';
                     edit = false;
@@ -351,828 +376,847 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Center(
-                                        child: Container(
-                                          height: 4,
-                                          width: 60,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFF98A2B3),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 20.0),
-                                            child: Text(
-                                              'Apply Leave',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                color: Color(0xFF004AAD),
-                                                fontFamily: 'Poppins',
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          Flexible(
-                                            child: Padding(
-                                              padding: EdgeInsets.all(5.0),
-                                              child: Divider(
-                                                indent: 4,
-                                                endIndent: 4,
-                                                color: Colors.black12,
-                                                thickness: 0.4,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
                                       Form(
                                         key: _leaveformkey,
                                         child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.start,
                                           children: [
-                                            Column(
-                                              crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                              children: [
-                                                Padding(
-                                                  padding: const EdgeInsets.only(
-                                                      left: 8.0),
-                                                  child: const Text(
-                                                    'Employee',
-                                                    style: TextStyle(
-                                                      fontFamily: 'Poppins',
-                                                      fontSize: 14,
-                                                      color: Color(0xFF667085),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-                                                Container(
-                                                  height: 50,
-                                                  width: 361,
+
+                                              Center(
+                                                child: Container(
+                                                  height: 4,
+                                                  width: 60,
                                                   decoration: BoxDecoration(
+                                                    color: Color(0xFF98A2B3),
                                                     borderRadius:
                                                     BorderRadius.circular(8),
-                                                    border: Border.all(
-                                                        color: Color(0xFFE9E9E9)),
-                                                  ),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 10.0),
-                                                    child: DropdownButton<String>(
-                                                      focusColor:
-                                                      Colors.transparent,
-                                                      isExpanded: true,
-                                                      underline:
-                                                      SizedBox(), // Removes underline
-                                                      icon: Icon(
-                                                        Icons.keyboard_arrow_down,
-                                                        color: Color(0xFF667085),
-                                                      ),
-                                                      iconSize: 22,
-                                                      value:
-                                                      modalSelected, // Ensure modalSelectedItem matches one of the values in leavetype
-                                                      style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontSize: 14.0),
-                                                      borderRadius:
-                                                      BorderRadius.circular(
-                                                          4),
-                                                      items: membervalue.map((r) {
-                                                        return DropdownMenuItem<
-                                                            String>(
-                                                          value: r
-                                                              .id, // Use ID as the value
-                                                          child: Padding(
-                                                            padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                                vertical:
-                                                                8.0),
-                                                            child: Text(
-                                                              r.name, // Display the name in the dropdown
-                                                              style: TextStyle(
-                                                                  fontSize: 14.0,
-                                                                  color: Colors
-                                                                      .black),
-                                                            ),
-                                                          ),
-                                                        );
-                                                      }).toList(),
-                                                      onChanged: (String? value) {
-                                                        setModalState(() {
-                                                          modalSelected =
-                                                              value; // Update the selected ID
-                                                          print(
-                                                              "Selected ID: $modalSelected"); // Debugging
-                                                        });
-                                                      },
-                                                    ),
                                                   ),
                                                 ),
-                                              ],
-                                            ),
-                                            SizedBox(
-                                              height: 10,
-                                            ),
-
-                                            Row(
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(
-                                                          left: 8.0),
-                                                      child: Row(
+                                              ),
+                                              Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                                children: [
+                                                  Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(top: 20.0),
+                                                    child: Text(
+                                                      'Apply Leave',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight: FontWeight.w400,
+                                                        color: Color(0xFF004AAD),
+                                                        fontFamily: 'Poppins',
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Padding(
+                                                      padding: EdgeInsets.all(5.0),
+                                                      child: Divider(
+                                                        indent: 4,
+                                                        endIndent: 4,
+                                                        color: Colors.black12,
+                                                        thickness: 0.4,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              Column(
+                                                children: [
+                                                  Column(
+                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                    children: [
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
                                                         children: [
-                                                          const Text(
-                                                            'Leave type',
-                                                            style: TextStyle(
-                                                              fontFamily: 'Poppins',
-                                                              fontSize: 14,
-                                                              color: Color(0xFF667085),
+                                                          Padding(
+                                                            padding: const EdgeInsets.only(
+                                                                left: 8.0),
+                                                            child: const Text(
+                                                              'Employee',
+                                                              style: TextStyle(
+                                                                fontFamily: 'Poppins',
+                                                                fontSize: 14,
+                                                                color: Color(0xFF667085),
+                                                              ),
                                                             ),
                                                           ),
-                                                          SizedBox(width: 20,),
-                                                          
+                                                          SizedBox(
+                                                            height: 10,
+                                                          ),
                                                           Container(
-                                                            height: 40,
-                                                            width: 40,
+                                                            height: 50,
+                                                            width: 361,
                                                             decoration: BoxDecoration(
-                                                              borderRadius: BorderRadius.circular(10),
-                                                              color: Colors.blue.withOpacity(0.4)
+                                                              borderRadius:
+                                                              BorderRadius.circular(8),
+                                                              border: Border.all(
+                                                                  color: Color(0xFFE9E9E9)),
                                                             ),
-                                                            child: Center(child:  Text(_con!.balance.toString())),
+                                                            child: Padding(
+                                                              padding: const EdgeInsets
+                                                                  .symmetric(
+                                                                  horizontal: 10.0),
+                                                              child: DropdownButton<String>(
+                                                                focusColor:
+                                                                Colors.transparent,
+                                                                isExpanded: true,
+                                                                underline:
+                                                                SizedBox(), // Removes underline
+                                                                icon: Icon(
+                                                                  Icons.keyboard_arrow_down,
+                                                                  color: Color(0xFF667085),
+                                                                ),
+                                                                iconSize: 22,
+                                                                value:
+                                                                modalSelected, // Ensure modalSelectedItem matches one of the values in leavetype
+                                                                style: TextStyle(
+                                                                    color: Colors.black,
+                                                                    fontSize: 14.0),
+                                                                borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                                items: membervalue.map((r) {
+                                                                  return DropdownMenuItem<
+                                                                      String>(
+                                                                    value: r
+                                                                        .id, // Use ID as the value
+                                                                    child: Padding(
+                                                                      padding:
+                                                                      const EdgeInsets
+                                                                          .symmetric(
+                                                                          vertical:
+                                                                          8.0),
+                                                                      child: Text(
+                                                                        r.name, // Display the name in the dropdown
+                                                                        style: TextStyle(
+                                                                            fontSize: 14.0,
+                                                                            color: Colors
+                                                                                .black),
+                                                                      ),
+                                                                    ),
+                                                                  );
+                                                                }).toList(),
+                                                                onChanged: (String? value) {
+                                                                  setModalState(() {
+                                                                    modalSelected =
+                                                                        value; // Update the selected ID
+                                                                    print(
+                                                                        "Selected ID: $modalSelected"); // Debugging
+                                                                  });
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(
+                                                        height: 10,
+                                                      ),
+
+                                                      Row(
+                                                        children: [
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                            CrossAxisAlignment.start,
+                                                            children: [
+                                                              Padding(
+                                                                padding: const EdgeInsets.only(
+                                                                    left: 8.0),
+                                                                child: Row(
+                                                                  children: [
+                                                                    const Text(
+                                                                      'Leave type',
+                                                                      style: TextStyle(
+                                                                        fontFamily: 'Poppins',
+                                                                        fontSize: 14,
+                                                                        color: Color(0xFF667085),
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(width: 20,),
+
+                                                                    Container(
+                                                                      height: 40,
+                                                                      width: 40,
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius: BorderRadius.circular(10),
+                                                                          color: Colors.blue.withOpacity(0.4)
+                                                                      ),
+                                                                      child: Center(child:  Text(_con!.balance.toString())),
+                                                                    )
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              SizedBox(
+                                                                height: 10,
+                                                              ),
+                                                              Container(
+                                                                height: 50,
+                                                                width: 160,
+                                                                decoration: BoxDecoration(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(8),
+                                                                  border: Border.all(
+                                                                      color: Color(0xFFE9E9E9)),
+                                                                ),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets
+                                                                      .symmetric(
+                                                                      horizontal: 10.0),
+                                                                  child: DropdownButton<String>(
+                                                                    focusColor:
+                                                                    Colors.transparent,
+                                                                    isExpanded: true,
+                                                                    underline:
+                                                                    SizedBox(), // Removes underline
+                                                                    icon: Icon(
+                                                                      Icons.keyboard_arrow_down,
+                                                                      color: Color(0xFF667085),
+                                                                    ),
+                                                                    iconSize: 22,
+                                                                    value:
+                                                                    modalSelectedItem, // Ensure modalSelectedItem matches one of the values in leavetype
+                                                                    style: TextStyle(
+                                                                        color: Colors.black,
+                                                                        fontSize: 14.0),
+                                                                    borderRadius:
+                                                                    BorderRadius.circular(
+                                                                        4),
+                                                                    items: leavetype.map((r) {
+                                                                      return DropdownMenuItem<
+                                                                          String>(
+                                                                        value: r
+                                                                            .id, // Use ID as the value
+                                                                        child: Padding(
+                                                                          padding:
+                                                                          const EdgeInsets
+                                                                              .symmetric(
+                                                                              vertical:
+                                                                              8.0),
+                                                                          child: Text(
+                                                                            r.name, // Display the name in the dropdown
+                                                                            style: TextStyle(
+                                                                                fontSize: 14.0,
+                                                                                color: Colors
+                                                                                    .black),
+                                                                          ),
+                                                                        ),
+                                                                      );
+                                                                    }).toList(),
+                                                                    onChanged: (String? value) {
+
+                                                                      setModalState(() {
+                                                                        modalSelectedItem =
+                                                                            value; // Update the selected ID
+                                                                        print(
+                                                                            "Selected ID: $modalSelectedItem");
+                                                                        _con?.viewLeavebalance(modalSelectedItem!);
+                                                                        print(_con?.balance);// Debugging
+                                                                      });
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(
+                                                            width: 20,
+                                                          ),
+
+                                                          Column(
+                                                            crossAxisAlignment:
+                                                            CrossAxisAlignment.start,
+                                                            children: [
+                                                              Padding(
+                                                                padding: const EdgeInsets.only(
+                                                                    left: 8.0),
+                                                                child: const Text(
+                                                                  'Leave Duration',
+                                                                  style: TextStyle(
+                                                                    fontFamily: 'Poppins',
+                                                                    fontSize: 14,
+                                                                    color: Color(0xFF667085),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              SizedBox(
+                                                                height: 10,
+                                                              ),
+                                                              Container(
+                                                                height: 50,
+                                                                width: 160,
+                                                                decoration: BoxDecoration(
+                                                                  borderRadius: BorderRadius.circular(4),
+                                                                  border: Border.all(
+                                                                    color: Color(0xFFE9E9E9),
+                                                                  ),
+                                                                ),
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                                                                  child: DropdownButton<String>(
+                                                                    isExpanded: true, // Ensures the dropdown covers the full width of the container
+                                                                    underline: Container(), // Removes default underline
+                                                                    value: modalSelectedItems, // This value should match one of the dropdown items
+                                                                    borderRadius: BorderRadius.circular(20),
+                                                                    icon: Icon(
+                                                                      Icons.keyboard_arrow_down,
+                                                                      color: Color(0xFF667085),
+                                                                    ), // Dropdown icon
+                                                                    iconSize: 22,
+                                                                    alignment: AlignmentDirectional.centerStart,
+                                                                    style: TextStyle(color: Colors.black),
+                                                                    items: <String>[
+                                                                      'half',
+                                                                      'full',
+                                                                    ].map<DropdownMenuItem<String>>((String value) {
+                                                                      return DropdownMenuItem<String>(
+                                                                        value: value,
+                                                                        child: Text(
+                                                                          value,
+                                                                          style: TextStyle(color: Colors.black),
+                                                                        ),
+                                                                      );
+                                                                    }).toList(),
+                                                                    onChanged: (String? value) {
+                                                                      if (value != null) {
+                                                                        setModalState(() {
+                                                                          modalSelectedItems = value; // Update selected item
+                                                                          print("Selected Item: $modalSelectedItems"); // Debugging output
+                                                                        });
+                                                                      }
+                                                                    },
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(
+                                                            height: 10,
+                                                          ),
+
+                                                          // TextFormField(
+                                                          //   style: TextStyle(
+                                                          //     fontSize: 18,
+                                                          //
+                                                          //   ),
+                                                          //   decoration: InputDecoration(
+                                                          //     hintText: ""
+                                                          //
+                                                          //   ),
+                                                          // )
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  Row(
+                                                    children: [
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                            const EdgeInsets.all(8.0),
+                                                            child: Text(
+                                                              'From Date',
+                                                              style: TextStyle(
+                                                                  color: Color(0xFF667085)),
+                                                            ),
+                                                          ),
+                                                          SizedBox(
+                                                            height: 75,
+                                                            width: 160,
+                                                            child: TextFormField(
+                                                              controller: _fromdateController,
+                                                              validator: (value){
+                                                                if(value!.isEmpty){
+                                                                  return 'Select To Date';
+
+                                                                }
+                                                                return null;
+                                                              },
+
+                                                              readOnly: true,
+                                                              decoration: InputDecoration(
+                                                                floatingLabelStyle:
+                                                                const TextStyle(
+                                                                  color: Color(0xFFC5C5C5),
+                                                                  fontFamily: 'Poppins',
+                                                                  fontSize: 14,
+                                                                  fontWeight: FontWeight.w400,
+                                                                ),
+                                                                labelStyle: const TextStyle(
+                                                                  color: Color(
+                                                                      0xFFC5C5C5), // Default label color
+                                                                ),
+                                                                contentPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                  vertical:
+                                                                  10.0, // Adjust vertical padding for height
+                                                                  horizontal:
+                                                                  10.0, // Adjust horizontal padding
+                                                                ),
+                                                                suffixIcon: IconButton(
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .calendar_month_outlined,
+                                                                    color: Color(
+                                                                        0xFF004AAD), // Example color for the icon
+                                                                  ),
+                                                                  onPressed: () {
+                                                                    _fromselectDate(
+                                                                        context); // Call the date picker function
+                                                                  },
+                                                                ),
+                                                                errorStyle: const TextStyle(
+                                                                  fontSize: 12,
+                                                                  fontFamily: 'Poppins',
+                                                                  color: Color(0xFFDC897C),
+                                                                ),
+
+                                                                // Borders
+                                                                enabledBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFE9E9E9), // Border color when enabled
+                                                                    width:
+                                                                    1, // Adjust the border width as needed
+                                                                  ),
+                                                                ),
+                                                                focusedBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFE9E9E9), // Border color when focused
+                                                                    width: 1,
+                                                                  ),
+                                                                ),
+                                                                errorBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFDC897C), // Border color when error occurs
+                                                                    width: 1,
+                                                                  ),
+                                                                ),
+                                                                focusedErrorBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFDC897C), // Border color when error occurs and focused
+                                                                    width: 1,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ),
                                                           )
                                                         ],
                                                       ),
-                                                    ),
-                                                    SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    Container(
-                                                      height: 50,
-                                                      width: 160,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(8),
-                                                        border: Border.all(
-                                                            color: Color(0xFFE9E9E9)),
+                                                      SizedBox(
+                                                        width: 20,
                                                       ),
-                                                      child: Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 10.0),
-                                                        child: DropdownButton<String>(
-                                                          focusColor:
-                                                              Colors.transparent,
-                                                          isExpanded: true,
-                                                          underline:
-                                                              SizedBox(), // Removes underline
-                                                          icon: Icon(
-                                                            Icons.keyboard_arrow_down,
-                                                            color: Color(0xFF667085),
+                                                      Column(
+                                                        crossAxisAlignment:
+                                                        CrossAxisAlignment.start,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                            const EdgeInsets.all(8.0),
+                                                            child: Text(
+                                                              'To Date',
+                                                              style: TextStyle(
+                                                                  color: Color(0xFF667085)),
+                                                            ),
                                                           ),
-                                                          iconSize: 22,
-                                                          value:
-                                                              modalSelectedItem, // Ensure modalSelectedItem matches one of the values in leavetype
-                                                          style: TextStyle(
-                                                              color: Colors.black,
-                                                              fontSize: 14.0),
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          items: leavetype.map((r) {
-                                                            return DropdownMenuItem<
-                                                                String>(
-                                                              value: r
-                                                                  .id, // Use ID as the value
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets
-                                                                        .symmetric(
-                                                                        vertical:
-                                                                            8.0),
-                                                                child: Text(
-                                                                  r.name, // Display the name in the dropdown
-                                                                  style: TextStyle(
-                                                                      fontSize: 14.0,
-                                                                      color: Colors
-                                                                          .black),
+                                                          SizedBox(
+                                                            height: 75,
+                                                            width: 160,
+                                                            child: TextFormField(
+                                                              readOnly: true,
+                                                              controller: _todateController,
+                                                              validator: (value){
+                                                                if(value!.isEmpty){
+                                                                  return 'Select To Date';
+
+                                                                }
+                                                                return null;
+                                                              },
+                                                              decoration: InputDecoration(
+                                                                floatingLabelStyle:
+                                                                const TextStyle(
+                                                                  color: Color(0xFFC5C5C5),
+                                                                  fontFamily: 'Poppins',
+                                                                  fontSize: 14,
+                                                                  fontWeight: FontWeight.w400,
+                                                                ),
+                                                                labelStyle: const TextStyle(
+                                                                  color: Color(
+                                                                      0xFFC5C5C5), // Default label color
+                                                                ),
+                                                                contentPadding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                  vertical:
+                                                                  10.0, // Adjust vertical padding for height
+                                                                  horizontal:
+                                                                  10.0, // Adjust horizontal padding
+                                                                ),
+                                                                suffixIcon: IconButton(
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .calendar_month_outlined,
+                                                                    color: Color(
+                                                                        0xFF004AAD), // Example color for the icon
+                                                                  ),
+                                                                  onPressed: () {
+                                                                    _toselectDate(
+                                                                        context); // Call the date picker function
+                                                                  },
+                                                                ),
+                                                                errorStyle: const TextStyle(
+                                                                  fontSize: 12,
+                                                                  fontFamily: 'Poppins',
+                                                                  color: Color(0xFFDC897C),
+                                                                ),
+
+                                                                // Borders
+                                                                enabledBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFE9E9E9), // Border color when enabled
+                                                                    width:
+                                                                    1, // Adjust the border width as needed
+                                                                  ),
+                                                                ),
+                                                                focusedBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFE9E9E9), // Border color when focused
+                                                                    width: 1,
+                                                                  ),
+                                                                ),
+                                                                errorBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFDC897C), // Border color when error occurs
+                                                                    width: 1,
+                                                                  ),
+                                                                ),
+                                                                focusedErrorBorder:
+                                                                OutlineInputBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4),
+                                                                  borderSide:
+                                                                  const BorderSide(
+                                                                    color: Color(
+                                                                        0xFFDC897C), // Border color when error occurs and focused
+                                                                    width: 1,
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            );
-                                                          }).toList(),
-                                                          onChanged: (String? value) {
-
-                                                            setModalState(() {
-                                                              modalSelectedItem =
-                                                                  value; // Update the selected ID
-                                                              print(
-                                                                  "Selected ID: $modalSelectedItem");
-                                                              _con?.viewLeavebalance(modalSelectedItem!);
-                                                              print(_con?.balance);// Debugging
-                                                            });
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  width: 20,
-                                                ),
-
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(
-                                                          left: 8.0),
-                                                      child: const Text(
-                                                        'Leave Duration',
-                                                        style: TextStyle(
-                                                          fontFamily: 'Poppins',
-                                                          fontSize: 14,
-                                                          color: Color(0xFF667085),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    Container(
-                                                      height: 50,
-                                                      width: 160,
-                                                      decoration: BoxDecoration(
-                                                        borderRadius:
-                                                            BorderRadius.circular(4),
-                                                        border: Border.all(
-                                                          color: Color(0xFFE9E9E9),
-                                                        ),
-                                                      ),
-                                                      child: Padding(
-                                                        padding: const EdgeInsets
-                                                            .symmetric(
-                                                            horizontal: 10.0),
-                                                        child: DropdownButton<String>(
-                                                          isExpanded:
-                                                              true, // Ensures the dropdown covers the full width of the container
-                                                          underline:
-                                                              Container(), // Removes default underline
-                                                          value: modalSelectedItems,
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  20),
-                                                          icon: Icon(
-                                                              Icons
-                                                                  .keyboard_arrow_down,
-                                                              color: Color(
-                                                                  0xFF667085)), // Dropdown icon at the end
-                                                          iconSize: 22,
-                                                          alignment:
-                                                              AlignmentDirectional
-                                                                  .centerStart,
-                                                          style: TextStyle(
-                                                              color: Colors.black),
-                                                          items: <String>[
-                                                            'half',
-                                                            'full',
-                                                          ].map<
-                                                                  DropdownMenuItem<
-                                                                      String>>(
-                                                              (String value) {
-                                                            return DropdownMenuItem<
-                                                                String>(
-                                                              value: value,
-
-                                                              child: Text(value,
-                                                                  style: TextStyle(
-                                                                      color: Colors
-                                                                          .black)),
-                                                              // Text for each item
-                                                            );
-                                                          }).toList(),
-                                                          onChanged: (String? value) {
-                                                            setModalState(() {
-                                                              modalSelectedItems =
-                                                                  value;
-                                                              print(
-                                                                  "Selected Item: $modalSelectedItems");
-                                                            });
-                                                          },
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-
-                                                // TextFormField(
-                                                //   style: TextStyle(
-                                                //     fontSize: 18,
-                                                //
-                                                //   ),
-                                                //   decoration: InputDecoration(
-                                                //     hintText: ""
-                                                //
-                                                //   ),
-                                                // )
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'From Date',
-                                                  style: TextStyle(
-                                                      color: Color(0xFF667085)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 75,
-                                                width: 160,
-                                                child: TextFormField(
-                                                  controller: _fromdateController,
-                                                  readOnly: true,
-                                                  decoration: InputDecoration(
-                                                    floatingLabelStyle:
-                                                        const TextStyle(
-                                                      color: Color(0xFFC5C5C5),
-                                                      fontFamily: 'Poppins',
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.w400,
-                                                    ),
-                                                    labelStyle: const TextStyle(
-                                                      color: Color(
-                                                          0xFFC5C5C5), // Default label color
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                      vertical:
-                                                          10.0, // Adjust vertical padding for height
-                                                      horizontal:
-                                                          10.0, // Adjust horizontal padding
-                                                    ),
-                                                    suffixIcon: IconButton(
-                                                      icon: Icon(
-                                                        Icons
-                                                            .calendar_month_outlined,
-                                                        color: Color(
-                                                            0xFF004AAD), // Example color for the icon
-                                                      ),
-                                                      onPressed: () {
-                                                        _fromselectDate(
-                                                            context); // Call the date picker function
-                                                      },
-                                                    ),
-                                                    errorStyle: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: 'Poppins',
-                                                      color: Color(0xFFDC897C),
-                                                    ),
-                                  
-                                                    // Borders
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when enabled
-                                                        width:
-                                                            1, // Adjust the border width as needed
-                                                      ),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    errorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    focusedErrorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs and focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            width: 20,
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'To Date',
-                                                  style: TextStyle(
-                                                      color: Color(0xFF667085)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 75,
-                                                width: 160,
-                                                child: TextFormField(
-                                                  readOnly: true,
-                                                  controller: _todateController,
-                                                  decoration: InputDecoration(
-                                                    floatingLabelStyle:
-                                                        const TextStyle(
-                                                      color: Color(0xFFC5C5C5),
-                                                      fontFamily: 'Poppins',
-                                                      fontSize: 14,
-                                                      fontWeight: FontWeight.w400,
-                                                    ),
-                                                    labelStyle: const TextStyle(
-                                                      color: Color(
-                                                          0xFFC5C5C5), // Default label color
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                      vertical:
-                                                          10.0, // Adjust vertical padding for height
-                                                      horizontal:
-                                                          10.0, // Adjust horizontal padding
-                                                    ),
-                                                    suffixIcon: IconButton(
-                                                      icon: Icon(
-                                                        Icons
-                                                            .calendar_month_outlined,
-                                                        color: Color(
-                                                            0xFF004AAD), // Example color for the icon
-                                                      ),
-                                                      onPressed: () {
-                                                        _toselectDate(
-                                                            context); // Call the date picker function
-                                                      },
-                                                    ),
-                                                    errorStyle: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: 'Poppins',
-                                                      color: Color(0xFFDC897C),
-                                                    ),
-                                  
-                                                    // Borders
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when enabled
-                                                        width:
-                                                            1, // Adjust the border width as needed
-                                                      ),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    errorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    focusedErrorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs and focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Reason',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF667085)),
-                                          ),
-                                          SizedBox(
-                                            height: 4,
-                                          ),
-                                          Container(
-                                            height: 100.0, // Set desired height
-                                            width: 361.0, // Set desired width
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              border: Border.all(
-                                                  color: Color(0xFFE9E9E9)),
-                                            ),
-                                            child: TextFormField(
-                                              controller: _reason,
-                                              decoration: InputDecoration(
-                                                contentPadding:
-                                                    EdgeInsets.symmetric(
-                                                        horizontal: 16.0,
-                                                        vertical: 8.0),
-                                                border: InputBorder
-                                                    .none, // Removes default border
-                                              ),
-                                              maxLines:
-                                                  null, // Allows multiple lines of text
-                                              style: TextStyle(fontSize: 16.0),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Attachment',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF667085)),
-                                          ),
-                                          SizedBox(
-                                            height: 4,
-                                          ),
-                                          Container(
-                                            height: 145,
-                                            width: 361,
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                                border: Border.all(
-                                                    width: 1,
-                                                    color: Color(0xFFE9E9E9))),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const Icon(
-                                                    Icons.file_upload_outlined,
-                                                    size: 20,
-                                                    color: Color(0xFF004AAD)),
-                                                const SizedBox(height: 3),
-                                                Column(
-                                                  children: [
-                                                    Center(
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .center,
-                                                        children: [
-                                                          const Text(
-                                                              "Drag & drop file or",
-                                                              style: TextStyle(
-                                                                  color: Color(
-                                                                      0xFF000000),
-                                                                  fontSize: 14,
-                                                                  fontFamily:
-                                                                      'Poppins')),
-                                                          TextButton(
-                                                              onPressed: () {},
-                                                              child: Text(
-                                                                "Browse",
-                                                                style: TextStyle(
-                                                                    decoration:
-                                                                        TextDecoration
-                                                                            .underline,
-                                                                    color: Color(
-                                                                        0xFF004AAD),
-                                                                    fontSize: 14,
-                                                                    fontFamily:
-                                                                        'Poppins'),
-                                                              )),
+                                                            ),
+                                                          )
                                                         ],
                                                       ),
-                                                    ),
-                                                    Center(
-                                                      child: Text(
-                                                        'supports:doc,.jpg,png,pdf upto 10MB',
+                                                    ],
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Reason',
                                                         style: TextStyle(
-                                                            fontFamily: 'Poppins',
-                                                            color:
-                                                                Color(0xFF98A2B3),
-                                                            fontSize: 14),
+                                                            fontSize: 14,
+                                                            color: Color(0xFF667085)),
                                                       ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 15,
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 20.0),
-                                        child: Row(
-                                          children: [
-                                            ConstrainedBox(
-                                              constraints:
-                                                  BoxConstraints.tightFor(
-                                                      width: 151, height: 42),
-                                              child: ElevatedButton.icon(
-                                                  onPressed: () {},
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Color(0xFFE4E7EC),
-                                                    elevation: .1,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4.0),
+                                                      SizedBox(
+                                                        height: 4,
+                                                      ),
+                                                      Container(
+                                                        height: 100.0, // Set desired height
+                                                        width: 361.0, // Set desired width
+                                                        decoration: BoxDecoration(
+                                                          borderRadius:
+                                                          BorderRadius.circular(8.0),
+                                                          border: Border.all(
+                                                              color: Color(0xFFE9E9E9)),
+                                                        ),
+                                                        child: TextFormField(
+                                                          controller: _reason,
+
+                                                          decoration: InputDecoration(
+                                                            contentPadding:
+                                                            EdgeInsets.symmetric(
+                                                                horizontal: 16.0,
+                                                                vertical: 8.0),
+                                                            border: InputBorder
+                                                                .none, // Removes default border
+                                                          ),
+                                                          validator: (value){
+                                                            if(value!.isEmpty){
+                                                              return 'Please Enter valid Reason';
+
+                                                            }
+                                                            return null;
+                                                          },
+                                                          maxLines:
+                                                          null, // Allows multiple lines of text
+                                                          style: TextStyle(fontSize: 16.0),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                    children: [
+                                                      Text(
+                                                        'Attachment',
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: Color(0xFF667085)),
+                                                      ),
+                                                      SizedBox(
+                                                        height: 4,
+                                                      ),
+                                                      Container(
+                                                        height: 145,
+                                                        width: 361,
+                                                        decoration: BoxDecoration(
+                                                            borderRadius:
+                                                            BorderRadius.circular(4),
+                                                            border: Border.all(
+                                                                width: 1,
+                                                                color: Color(0xFFE9E9E9))),
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                          MainAxisAlignment.center,
+                                                          children: [
+                                                            const Icon(
+                                                                Icons.file_upload_outlined,
+                                                                size: 20,
+                                                                color: Color(0xFF004AAD)),
+                                                            const SizedBox(height: 3),
+                                                            Column(
+                                                              children: [
+                                                                Center(
+                                                                  child: Row(
+                                                                    mainAxisAlignment:
+                                                                    MainAxisAlignment
+                                                                        .center,
+                                                                    children: [
+                                                                      const Text(
+                                                                          "Drag & drop file or",
+                                                                          style: TextStyle(
+                                                                              color: Color(
+                                                                                  0xFF000000),
+                                                                              fontSize: 14,
+                                                                              fontFamily:
+                                                                              'Poppins')),
+                                                                      TextButton(
+                                                                          onPressed: () {},
+                                                                          child: Text(
+                                                                            "Browse",
+                                                                            style: TextStyle(
+                                                                                decoration:
+                                                                                TextDecoration
+                                                                                    .underline,
+                                                                                color: Color(
+                                                                                    0xFF004AAD),
+                                                                                fontSize: 14,
+                                                                                fontFamily:
+                                                                                'Poppins'),
+                                                                          )),
+                                                                    ],
+                                                                  ),
+                                                                ),
+                                                                Center(
+                                                                  child: Text(
+                                                                    'supports:doc,.jpg,png,pdf upto 10MB',
+                                                                    style: TextStyle(
+                                                                        fontFamily: 'Poppins',
+                                                                        color:
+                                                                        Color(0xFF98A2B3),
+                                                                        fontSize: 14),
+                                                                  ),
+                                                                )
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 15,
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                    const EdgeInsets.only(left: 20.0),
+                                                    child: Row(
+                                                      children: [
+                                                        ConstrainedBox(
+                                                          constraints:
+                                                          BoxConstraints.tightFor(
+                                                              width: 151, height: 42),
+                                                          child: ElevatedButton.icon(
+                                                              onPressed: () {
+                                                                Navigator.pop(context);
+                                                              },
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                Color(0xFFE4E7EC),
+                                                                elevation: .1,
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4.0),
+                                                                ),
+                                                              ),
+                                                              label: Row(
+                                                                mainAxisAlignment:
+                                                                MainAxisAlignment.center,
+                                                                children: [
+                                                                  Center(
+                                                                      child: const Text(
+                                                                        "Cancel",
+                                                                        style: TextStyle(
+                                                                            fontFamily: 'Poppins',
+                                                                            fontSize: 14,
+                                                                            fontWeight:
+                                                                            FontWeight.w400,
+                                                                            color: Color(
+                                                                                0xFF030303)),
+                                                                      )),
+                                                                ],
+                                                              )),
+                                                        ),
+                                                        SizedBox(
+                                                          width: 10,
+                                                        ),
+                                                        ConstrainedBox(
+                                                          constraints:
+                                                          BoxConstraints.tightFor(
+                                                              width: 151, height: 42),
+                                                          child: ElevatedButton.icon(
+                                                              onPressed: () {
+                                                                if (_leaveformkey
+                                                                    .currentState!
+                                                                    .validate()) {
+                                                                  _leaveformkey.currentState
+                                                                      ?.save();
+                                                                  _leaveRequestModel
+                                                                      .start_date =
+                                                                      _fromdateController.text
+                                                                          .toString();
+                                                                  _leaveRequestModel
+                                                                      .end_date =
+                                                                      _todateController.text
+                                                                          .toString();
+                                                                  _leaveRequestModel.reason =
+                                                                      _reason.text.toString();
+                                                                  _leaveRequestModel
+                                                                      .leave_type_id =
+                                                                      modalSelectedItem;
+                                                                  _leaveRequestModel
+                                                                      .leave_duration =
+                                                                      modalSelectedItems;
+                                                                  _leaveRequestModel.behalf=modalSelected;
+                                                                  print(_leaveRequestModel
+                                                                      .start_date);
+                                                                  print(_leaveRequestModel
+                                                                      .end_date);
+                                                                  print(_leaveRequestModel
+                                                                      .reason);
+                                                                  print(_leaveRequestModel
+                                                                      .leave_type_id);
+                                                                  print(_leaveRequestModel
+                                                                      .leave_duration);
+                                                                  _con?.applyLeaveRequest(
+                                                                      _leaveRequestModel,context);
+                                                                }
+                                                              },
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                Color(0xFF004AAD),
+                                                                elevation: .1,
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4.0),
+                                                                ),
+                                                              ),
+                                                              label: Row(
+                                                                mainAxisAlignment:
+                                                                MainAxisAlignment.center,
+                                                                children: [
+                                                                  Center(
+                                                                      child: const Text(
+                                                                        "Apply",
+                                                                        style: TextStyle(
+                                                                            fontFamily: 'Poppins',
+                                                                            fontSize: 14,
+                                                                            fontWeight:
+                                                                            FontWeight.w400,
+                                                                            color: Colors.white),
+                                                                      )),
+                                                                ],
+                                                              )),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                  label: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.center,
-                                                    children: [
-                                                      Center(
-                                                          child: const Text(
-                                                        "Cancel",
-                                                        style: TextStyle(
-                                                            fontFamily: 'Poppins',
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            color: Color(
-                                                                0xFF030303)),
-                                                      )),
-                                                    ],
-                                                  )),
-                                            ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            ConstrainedBox(
-                                              constraints:
-                                                  BoxConstraints.tightFor(
-                                                      width: 151, height: 42),
-                                              child: ElevatedButton.icon(
-                                                  onPressed: () {
-                                                    if (_leaveformkey
-                                                        .currentState!
-                                                        .validate()) {
-                                                      _leaveformkey.currentState
-                                                          ?.save();
-                                                      _leaveRequestModel
-                                                              .start_date =
-                                                          _fromdateController.text
-                                                              .toString();
-                                                      _leaveRequestModel
-                                                              .end_date =
-                                                          _todateController.text
-                                                              .toString();
-                                                      _leaveRequestModel.reason =
-                                                          _reason.text.toString();
-                                                      _leaveRequestModel
-                                                              .leave_type_id =
-                                                          modalSelectedItem;
-                                                      _leaveRequestModel
-                                                              .leave_duration =
-                                                          modalSelectedItems;
-                                                      _leaveRequestModel.behalf=modalSelected;
-                                                      print(_leaveRequestModel
-                                                          .start_date);
-                                                      print(_leaveRequestModel
-                                                          .end_date);
-                                                      print(_leaveRequestModel
-                                                          .reason);
-                                                      print(_leaveRequestModel
-                                                          .leave_type_id);
-                                                      print(_leaveRequestModel
-                                                          .leave_duration);
-                                                      _con?.applyLeaveRequest(
-                                                          _leaveRequestModel,context);
-                                                    }
-                                                  },
-                                                  style: ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Color(0xFF004AAD),
-                                                    elevation: .1,
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4.0),
-                                                    ),
-                                                  ),
-                                                  label: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment.center,
-                                                    children: [
-                                                      Center(
-                                                          child: const Text(
-                                                        "Apply",
-                                                        style: TextStyle(
-                                                            fontFamily: 'Poppins',
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                            color: Colors.white),
-                                                      )),
-                                                    ],
-                                                  )),
-                                            ),
-                                          ],
-                                        ),
+                                                ],
+                                              ),
+                                            ],
+
+                                        )
+
                                       ),
                                     ],
                                   ),
@@ -1183,7 +1227,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                         );
                       },
                     );
-                  },
+                  } ,
                   icon: const Icon(
                     Icons.add,
                     color: Colors.white,
@@ -1195,7 +1239,24 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                         fontFamily: 'Poppins',
                         fontSize: 14),
                   ),
-                )
+                ) :
+          FloatingActionButton.extended(
+            backgroundColor: Color(0xFFADD8E6),
+
+            onPressed: (){},
+
+            icon: const Icon(
+              Icons.add,
+              color: Colors.white,
+            ),
+            label: const Text(
+              'Apply',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontFamily: 'Poppins',
+                  fontSize: 14),
+            ),
+          )
               : FloatingActionButton(
                   backgroundColor: Color(0xFF004AAD),
             onPressed: () {
@@ -1478,6 +1539,12 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                         width: 160,
                                         child: TextFormField(
                                           controller: _fromdateController,
+                                          validator: (value){
+                                            if(value!.isEmpty){
+                                              return 'Please Select From Date';
+
+                                            }
+                                          },
                                           decoration: InputDecoration(
                                             floatingLabelStyle:
                                             const TextStyle(
@@ -2551,7 +2618,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                       Spacer(),
                                                        userleave.status == 'pending'? Row(
                                                           children: [
-                                                            Container(
+                                                           leaveedit! ? Container(
                                                               decoration: BoxDecoration(
                                                                 borderRadius: BorderRadius.circular(50),
                                                                 border: Border.all(
@@ -2575,11 +2642,40 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                   edituserleave(userleave,userleave.id,edit);
                                                                 },
                                                               )),
-                                                            ),
+                                                            ) :
+                                                           Container(
+                                                             decoration: BoxDecoration(
+                                                                 borderRadius: BorderRadius.circular(50),
+                                                                 border: Border.all(
+                                                                     color: Colors.black12
+                                                                 )),
+                                                             child: Center(
+                                                                 child: InkWell(
+                                                                   child: Padding(
+                                                                     padding: const EdgeInsets.all(8.0),
+                                                                     child: Center(
+                                                                       child: Image.asset(
+                                                                         'assets/images/edit-2.png',
+                                                                         height: 20,
+                                                                         width: 20,
+                                                                         color:
+                                                                         Color(0xFFADD8E6),
+                                                                       ),
+                                                                     ),
+                                                                   ),
+                                                                   // onTap: () {
+                                                                   //   edituserleave(userleave,userleave.id,edit);
+                                                                   // },
+                                                                     onTap: () {
+
+                                                                     }
+                                                                 )),
+                                                           ),
                                                             SizedBox(
                                                               width: 10,
                                                             ),
-                                                            Container(
+                                                           leavedelete! ?
+                                                           Container(
                                                               decoration: BoxDecoration(
                                                                   borderRadius: BorderRadius.circular(50),
                                                                   border: Border.all(
@@ -2603,7 +2699,32 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                       deleteleaverequest(userleave.id,context);
                                                                     },
                                                                   )),
-                                                            ),
+                                                            ) :
+                                                           Container(
+                                                             decoration: BoxDecoration(
+                                                                 borderRadius: BorderRadius.circular(50),
+                                                                 border: Border.all(
+                                                                     color: Colors.black12
+                                                                 )),
+                                                             child: Center(
+                                                                 child: InkWell(
+                                                                   child: Padding(
+                                                                     padding: const EdgeInsets.all(8.0),
+                                                                     child: Center(
+                                                                       child: Image.asset(
+                                                                         'assets/images/trash.png',
+                                                                         height: 20,
+                                                                         width: 20,
+                                                                         color:
+                                                                         Color(0xFFFEE5E2),
+                                                                       ),
+                                                                     ),
+                                                                   ),
+                                                                   onTap: () {
+                                                                     deleteleaverequest(userleave.id,context);
+                                                                   },
+                                                                 )),
+                                                           ),
                                                           ],
                                                         ) : Container(),
                                                       ],
@@ -4939,6 +5060,13 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                               width: 160,
                               child: TextFormField(
                                 controller: _todateeditController,
+                                validator: (value){
+                                  if(value!.isEmpty){
+                                    return 'Enter Todate';
+
+                                  }
+                                  return null;
+                                },
                                 readOnly: true,
                                 decoration: InputDecoration(
                                   floatingLabelStyle: const TextStyle(
@@ -4952,6 +5080,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                     color: Color(
                                         0xFFC5C5C5), // Default label color
                                   ),
+
                                   contentPadding: const EdgeInsets.symmetric(
                                     vertical:
                                         10.0, // Adjust vertical padding for height

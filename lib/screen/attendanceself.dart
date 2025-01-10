@@ -2484,9 +2484,9 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
                                                           padding: const EdgeInsets.all(8.0),
                                                           child: Container(
                                                             height: 25,
-                                                            width: 78,
+                                                            width: 120,
                                                             decoration: BoxDecoration(
-                                                                color: attendance.status == 'approved'?Color(0xFF65BD95):Color(0xFFF1BB5B),
+                                                                color: attendance.status == 'approved' ||attendance.status == 'auto-approved' ?Color(0xFF65BD95):Color(0xFFF1BB5B),
                                                                 borderRadius:
                                                                 BorderRadius.circular(
                                                                     4)),

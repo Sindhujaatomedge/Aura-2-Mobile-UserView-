@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:sampleaura/model/response/checkintime.dart';
+import 'package:sampleaura/model/response/employeepermission.dart';
 import 'package:sampleaura/model/response/upcomingbirthday.dart';
 import 'package:sampleaura/model/response/upcomingholiday.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -186,3 +187,46 @@ Future<List<LeaveData>?> fetchleavetype() async {
   return null;
 
 }
+Future<RolePermission?> fetchpermission() async {
+  try {
+    TokenModel? tokenModel = await TokenModel.loadFromPrefs();
+    String accessToken = tokenModel?.accessToken ?? '';
+    String refreshToken = tokenModel?.refreshToken ?? '';
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? rawString = prefs.getString('orgid');
+    String? orgId = rawString?.split(': ')[1].replaceAll('}', '').trim();
+    final body = {
+      'orgid': orgId,
+    };
+    final url = AppConstant().rolepermission;
+
+    // Make the API call
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Token': accessToken,
+        'Refresh-Token': refreshToken,
+      },
+      body: json.encode(body),
+    );
+
+    print('Response Status Code: ${response.statusCode}');
+    print('Response Body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      dynamic jsonData = jsonDecode(response.body);
+
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+      return RolePermission.fromJson(jsonResponse);
+
+    }
+
+  } catch (e) {
+    print('Error: $e');
+    // Return an empty list in case of any exception
+  }
+  return null;
+
+}
+
