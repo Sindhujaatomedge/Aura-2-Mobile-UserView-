@@ -380,7 +380,7 @@ Future<List<Attendancelog>?> deleteData(BuildContext context,String id,String us
     throw Exception('Failed to fetch data: $e');
   }
 }
-Future<List<Attendancelog>?> approve(String id, AttendanceRequestLog attendancerequest) async {
+Future<List<Attendancelog>?> approve(String id, AttendanceRequestLog attendancerequest,String approvercomment) async {
   try {
 
     TokenModel? tokenModel = await TokenModel.loadFromPrefs();
@@ -403,7 +403,8 @@ Future<List<Attendancelog>?> approve(String id, AttendanceRequestLog attendancer
       'orgid': orgId,
       'ids':[id],
       'type' : attendancerequest.approver_type,
-      'approvalstatus' : "approved"
+      'approvalstatus' : "approved",
+      'approvercomment' : approvercomment
 
     };
     final url = AppConstant().attendanceregularization;

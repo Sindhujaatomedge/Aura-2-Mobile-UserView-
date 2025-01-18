@@ -24,7 +24,7 @@ class LeaveRequestController extends ControllerMVC{
   List<LeaveTypeDropdownValue>fetchroledatavlaue =[];
   List<MemberDropdown>fetchmemberdatavlaue =[];
   LeaveDetails? leavebalance;
-  var balance = '';
+  var balance = '0';
 
   LeaveRequestController(){
 
@@ -59,12 +59,12 @@ class LeaveRequestController extends ControllerMVC{
     }
   }
 
-  Future <void> approve(String id, LeaveModel leavemodel)async {
+  Future <void> approve(String id, LeaveModel leavemodel,String approverComments)async {
     setState((){
       isLoading = false;
 
     });
-    repository.approve(id,leavemodel).then((value){
+    repository.approve(id,leavemodel,approverComments).then((value){
 
       setState((){
         repository.fetchResponseData();

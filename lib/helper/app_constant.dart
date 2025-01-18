@@ -1,7 +1,7 @@
 class AppConstant {
 
- // late String BASE_URL = "http://192.168.0.70:8080/";
- // late String BASE_URL = "http://192.168.29.232:8080/";
+ // late String BASE_URL = "http://192.168.137.1:8080/";
+ //late String BASE_URL = "http://192.168.29.232:8080/";
   //late String BASE_URL = "http://192.168.0.57:8080/";
    late String BASE_URL = "http://65.0.25.200:8080/";
    late String verifyidentifier = BASE_URL+"verify-identifier";
@@ -39,6 +39,7 @@ class AppConstant {
    late String empleavingthismonth = BASE_URL+'empleavingthismonth';
    late String feedbackcount = BASE_URL+'feedbackcounttoday';
    late String turnover = BASE_URL+'turnover';
+   late String personaldeatils = BASE_URL+'getpersonaldetailsbyuserid';
 
 
 

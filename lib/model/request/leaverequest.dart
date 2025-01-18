@@ -1,5 +1,7 @@
 
 
+import 'dart:io';
+
 class LeaveRequestModel {
   String? orgid;
   String? leave_type_id;
@@ -10,7 +12,8 @@ class LeaveRequestModel {
   String? no_of_days;
   String? status;
   String? behalf;
-  LeaveRequestModel({this.orgid,this.leave_type_id, this.start_date, this.end_date, this.reason,this.leave_duration, this.no_of_days,this.status,this.behalf});
+  File? file;
+  LeaveRequestModel({this.orgid,this.leave_type_id, this.start_date, this.end_date, this.reason,this.leave_duration, this.no_of_days,this.status,this.behalf,this.file});
 
 
   Map<String, dynamic> toJson() {
@@ -23,7 +26,8 @@ class LeaveRequestModel {
       'leave_duration': this.leave_duration,
       'no_of_days': this.no_of_days,
       'status': this.status,
-      'behalf':this.behalf
+      'behalf':this.behalf,
+      'file':this.file
 
     };
   }

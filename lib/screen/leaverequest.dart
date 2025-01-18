@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:intl/intl.dart';
+import 'package:sampleaura/screen/homepage.dart';
 
 
 import '../controller/leaverequest.dart';
@@ -21,6 +22,8 @@ class Leaverequest extends StatefulWidget {
 class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProviderStateMixin {
   TabController? tabController;
   late LeaveRequestController _con;
+  String email = " ";
+  TextEditingController approverComments = TextEditingController();
 
   _LeaverequestState(): super(LeaveRequestController()){
     _con = controller as LeaveRequestController;
@@ -62,13 +65,13 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
             title: const Text('Leave Request'),
             leading: InkWell(child: const Icon(Icons.arrow_back_ios, color: Colors.black),onTap: (){Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => HomeScreen()));
+                MaterialPageRoute(builder: (context) => Homepage(email)));
             },),
 
           ), body:  SafeArea(
             child:
             DefaultTabController(
-              length: 3,
+              length: 1,
               child:
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -87,12 +90,12 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
                       Tab(
                         text: "Awaiting",
                       ),
-                      Tab(
-                        text: "Approved",
-                      ),
-                      Tab(
-                        text: "Rejected",
-                      ),
+                      // Tab(
+                      //   text: "Approved",
+                      // ),
+                      // Tab(
+                      //   text: "Rejected",
+                      // ),
 
                     ],
                   ),
@@ -108,10 +111,16 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
                         )
                             : _con.leaverequest.isEmpty? Container(
                           child: Center(
-                            child: SvgPicture.asset(
-                              'assets/images/norecord.svg',
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center, // Centers the column vertically
+                              children: [
+                                SvgPicture.asset(
+                                  'assets/images/norecord.svg',
+                                ),
+                                Text("No Record Found",style: TextStyle(fontFamily: 'Poppins',fontSize: 12),)
+                              ],
                             ),
-                          ),
+                          )
                         ):
                         ListView.builder(
 
@@ -334,23 +343,57 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
                                                  ],
                                                ),
                                                SizedBox(height: 10,),
-                                               Center(
-                                                 child: Container(
-                                                   height: 112,
-                                                   width: 321,
-                                                   decoration: BoxDecoration(
-                                                       border: Border.all(
-                                                           color: Color(0xFFE4E7EC)
-                                                       ),
-                                                       borderRadius: BorderRadius.circular(10)
+                                         Padding(
+                                           padding: const EdgeInsets.all(8.0),
+                                           child: Column(
+                                             crossAxisAlignment:
+                                             CrossAxisAlignment.start,
+                                             children: [
+                                               Text(
+                                                 'Your Comments',
+                                                 style: TextStyle(
+                                                     fontSize: 10,
+                                                     fontFamily: 'Poppins',
+                                                     color: Color(0xFF667085)),
+                                               ),
+                                               SizedBox(
+                                                 height: 4,
+                                               ),
+                                               Container(
+                                                 height: 100.0, // Set desired height
+                                                 width: 361.0, // Set desired width
+                                                 decoration: BoxDecoration(
+                                                   borderRadius:
+                                                   BorderRadius.circular(8.0),
+                                                   border: Border.all(
+                                                       color: Color(0xFFE9E9E9)),
+                                                 ),
+                                                 child: TextFormField(
+                                                   controller:approverComments ,
 
+                                                   decoration: InputDecoration(
+                                                     contentPadding:
+                                                     EdgeInsets.symmetric(
+                                                         horizontal: 16.0,
+                                                         vertical: 8.0),
+                                                     border: InputBorder
+                                                         .none, // Removes default border
                                                    ),
-                                                   child: Padding(
-                                                     padding: const EdgeInsets.all(8.0),
-                                                     child: Text('Your Comment',style: TextStyle(fontSize:12,fontFamily:'Poppins',color: Color(0xFF98A2B3),),),
-                                                   ),
+                                                   validator: (value){
+                                                     if(value!.isEmpty){
+                                                       return 'Please Enter valid Reason';
+
+                                                     }
+                                                     return null;
+                                                   },
+                                                   maxLines:
+                                                   null, // Allows multiple lines of text
+                                                   style: TextStyle(fontSize: 16.0),
                                                  ),
                                                ),
+                                             ],
+                                           ),
+                                         ),
                                                SizedBox(
                                                  height: 15,
                                                ),
@@ -396,7 +439,7 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
 
                                                            onPressed: (){
                                                              print("API");
-                                                             _con.approve(leaverequest.id!,leaverequest);
+                                                             _con.approve(leaverequest.id!,leaverequest,approverComments.text);
                                                              setState((){
                                                                _con.fetchResponseleave();
 
@@ -586,7 +629,7 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
 
                                                            onPressed: (){
                                                              print("API");
-                                                             _con.approve(leaverequest.id!,leaverequest);
+                                                             _con.approve(leaverequest.id!,leaverequest,approverComments.text);
                                                              setState((){
                                                                _con.fetchResponseleave();
 
@@ -633,835 +676,835 @@ class _LeaverequestState extends StateMVC<Leaverequest> with SingleTickerProvide
 
 
 
-                      ListView.builder(
-                        itemCount: _con.leaverequest.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          var leaverequest = _con.leaverequest[index];
-
-                          return  leaverequest.status =='approved'?
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: InkWell(
-                              onTap: (){
-                                showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-
-                                    builder: (context) {
-                                      return FractionallySizedBox(
-                                        heightFactor: 0.8,
-                                        child:  Padding(
-                                          padding: const EdgeInsets.all(7.0),
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Center(
-                                                child: Container(
-                                                  height: 4,
-                                                  width: 60,
-                                                  decoration: BoxDecoration(
-                                                      color: Color(0xFF98A2B3),
-                                                      borderRadius: BorderRadius.circular(8)
-                                                  ),
-
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(top: 30.0 ,left: 13),
-                                                child:
-                                                Row(
-                                                  children: [
-                                                    // Ensure the avatar image loads correctly, with fallback handling for null or errors
-                                                    Image.network(
-                                                      leaverequest.avatar!,
-                                                      width: 50,
-                                                      height: 50,
-                                                      errorBuilder: (context, error, stackTrace) {
-                                                        return Icon(Icons.person, size: 50); // Fallback icon
-                                                      },
-                                                    ),
-
-                                                    Spacer(), // Add spacing between elements for better layout
-
-                                                    Flexible(
-                                                      child: Padding(
-                                                        padding: const EdgeInsets.all(8.0),
-                                                        child: Container(
-                                                          height: 28,
-                                                          decoration: BoxDecoration(
-                                                            color: Color(0xFF65BD95),
-                                                            borderRadius: BorderRadius.circular(4),
-                                                          ),
-                                                          child: Center(
-                                                            child: Text(
-                                                              "Approved",
-                                                              style: TextStyle(
-                                                                fontFamily: 'Poppins',
-                                                                fontSize: 12,
-                                                                fontWeight: FontWeight.w400,
-                                                                color: Colors.white,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-
-                                              ),
-
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 13.0),
-                                                child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Text(leaverequest.username!,style: TextStyle(fontSize:16,fontFamily: 'Poppins',fontWeight: FontWeight.w500,color: Color(0xFF1D2939) ),),
-                                                    Text('Ux Designer',style: TextStyle(fontSize:12,fontFamily: 'Poppins',fontWeight: FontWeight.w400,color: Color(0xFF98A2B3) ),),
-                                                    SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 8.0),
-                                                      child: Row(
-
-
-                                                        children: [
-                                                          Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
-                                                          SizedBox(width: 5,),
-                                                          Text(leaverequest.leaveType!,style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
-
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      height: 10,
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(left: 8.0),
-                                                      child: Row(
-
-                                                        children: [
-                                                          Image.asset('assets/images/calendar1.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
-                                                          SizedBox(
-                                                            width: 3,
-                                                          ),
-                                                          Text(leaverequest.noOfDays.toString(),style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),),
-                                                        ],
-                                                      ),
-                                                    ),
-
-                                                    Padding(
-                                                      padding: const EdgeInsets.all(8.0),
-                                                      child:
-                                                      Row(
-                                                        children: [
-                                                          Image.asset('assets/images/calendar2.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
-                                                          SizedBox(width: 5,),
-                                                        Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),)
-                                                          // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
-                                                        ],
-                                                      ),
-                                                    ),
-
-                                                  ],
-                                                ),
-                                              ),
-                                              SizedBox(height: 16),
-                                              Center(
-                                                child: Container(
-                                                  height: 112,
-                                                  width: 321,
-                                                  decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Color(0xFFE4E7EC)
-                                                      ),
-                                                      borderRadius: BorderRadius.circular(10)
-
-                                                  ),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.all(8.0),
-                                                    //child: Text(leaverequest.reason,),
-                                                    child: Text(leaverequest.reason!),
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(height: 10),
-                                              Padding(
-                                                padding: const EdgeInsets.only(left: 15.0),
-                                                child: Text("Attachment",style: TextStyle(
-                                                    fontSize: 12,
-                                                    fontFamily: 'Poppins',
-
-                                                    color: Color(0xFF98A2B3)),),
-                                              ),
-                                              SizedBox(
-                                                height: 10,
-                                              ),
-                                              Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Container(
-                                                    width: 155,
-                                                    height: 55,
-                                                    child: Row(
-                                                      children: [
-                                                        Container(
-                                                            decoration: BoxDecoration(
-                                                                borderRadius: BorderRadius.circular(5),
-                                                                border: Border.all(
-                                                                  color: Color(0xFFE9E9E9),
-                                                                )
-                                                            ),
-                                                            child: Row(
-                                                              mainAxisAlignment: MainAxisAlignment.start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets.only(left: 5.0),
-                                                                  child: Image.asset('assets/images/document.png',height: 22,width: 22,),
-                                                                ),
-                                                                SizedBox(
-                                                                  width: 10,
-                                                                ),
-                                                                Column(
-                                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: const EdgeInsets.only(top:8.0,right: 8),
-                                                                      child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
-                                                                    ),
-                                                                    Padding(
-                                                                      padding: const EdgeInsets.only(right:10),
-                                                                      child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
-                                                                    ),
-
-                                                                  ],
-                                                                )
-                                                              ],
-                                                            )
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    width: 10,
-                                                  ),
-                                                  Container(
-                                                    width: 155,
-                                                    height: 55,
-                                                    child: Row(
-                                                      children: [
-                                                        Row(
-                                                          children: [
-                                                            Container(
-                                                                decoration: BoxDecoration(
-                                                                    borderRadius: BorderRadius.circular(5),
-                                                                    border: Border.all(
-                                                                      color: Color(0xFFE9E9E9),
-                                                                    )
-                                                                ),
-                                                                child: Row(
-                                                                  // mainAxisAlignment: MainAxisAlignment.start,
-                                                                  children: [
-                                                                    Padding(
-                                                                      padding: const EdgeInsets.only(left: 5.0),
-                                                                      child: Image.asset('assets/images/document.png',height: 22,width: 22,),
-                                                                    ),
-                                                                    SizedBox(
-                                                                      width: 10,
-                                                                    ),
-                                                                    Column(
-                                                                      mainAxisAlignment: MainAxisAlignment.start,
-                                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                                      children: [
-                                                                        Padding(
-                                                                          padding: const EdgeInsets.only(top:8.0,right: 8),
-                                                                          child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
-                                                                        ),
-                                                                        Padding(
-                                                                          padding: const EdgeInsets.only(right:10),
-                                                                          child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
-                                                                        ),
-
-                                                                      ],
-                                                                    )
-                                                                  ],
-                                                                )
-                                                            ),
-                                                          ],
-                                                        )],
-
-
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-
-
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                  // builder: (BuildContext context) {
-                                  //   return _buildBottomSheetContent();
-                                  // },
-                                );
-                                // buildScrollablesheet();
-                              },
-                              child: Column(
-                                children: [
-                                  Stack(
-                                      children: [
-                                        Positioned(
-                                          top:6,
-                                          right: -35,
-                                          child: Container(
-                                            height: 175,
-                                            width: 191,
-                                            child: Image.asset('assets/images/beachbg.png',),
-                                          ),
-                                        ),
-                                        Positioned(
-                                          top: 75,
-                                          right: 30,
-                                          child: Container(
-                                            height: 28,
-                                            width: 78,
-                                            decoration: BoxDecoration(
-                                                color: Color(0xFF65BD95),
-                                                borderRadius: BorderRadius.circular(4)
-                                            ),
-
-                                            child: Center(child: Text("Approved",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white))),
-                                          ),
-                                          // child: ElevatedButton.icon(
-                                          //
-                                          //     onPressed: (){},
-                                          //     style: ElevatedButton.styleFrom(
-                                          //       backgroundColor: Color(0xFF65BD95),
-                                          //       elevation: .5,
-                                          //
-                                          //       shape: RoundedRectangleBorder(
-                                          //         borderRadius: BorderRadius.circular(4.0),
-                                          //       ),
-                                          //     ),
-                                          //     label:  const Text("Approved",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white),)),
-                                        ),
-                                        Container(
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                width: .7,
-                                                color: Color(0xFFE4E7EC),
-
-                                              ),
-                                              color: Colors.transparent,
-                                              borderRadius: BorderRadius.circular(8)
-                                          ),
-                                          height: 175,
-                                          width: 361,
-                                          child: Column(
-                                            children: [
-
-                                              Row(
-                                                children: [
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(top: 10.0, left: 10),
-                                                    child: Image.network(
-                                                      leaverequest.avatar!,
-                                                      width: 40,
-                                                      height: 40,
-                                                      fit: BoxFit.cover, // Ensures the image fits its container
-                                                    ),
-                                                  ),
-                                                  SizedBox(width: 10), // Add spacing between elements if needed
-                                                  Flexible(
-                                                    child: Text(
-                                                      leaverequest.username ?? "No name",
-                                                      style: TextStyle(fontSize: 16),
-                                                      overflow: TextOverflow.ellipsis, // Truncate text if it's too long
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                              Padding(
-                                                padding:  EdgeInsets.only(top:25.0,left: 20),
-                                                child: Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
-                                                     Padding(
-                                                      padding: EdgeInsets.only(left: 8.0),
-                                                      child: Text(leaverequest.leaveType!,style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
-                                                    )
-                                                  ],
-                                                ),
-
-                                              ),
-
-                                              Padding(
-                                                padding: const EdgeInsets.only(top:10.0,left: 20),
-                                                child: Row(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Center(child: Image.asset('assets/images/calendar1.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
-                                                        SizedBox(
-                                                          width: 3,
-                                                        ),
-                                                        // Center(child: Text(leaverequest.noOfDays.toString() + '  Days',style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
-                                                        Center(child: Text(leaverequest.noOfDays.toString(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
-                                                      ],
-                                                    ),
-
-
-                                                    // Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),)
-                                                  ],
-                                                ),
-                                              ),
-                                              Padding(
-                                                padding: const EdgeInsets.only(top:10.0,left: 20),
-                                                child: Row(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.center,
-                                                      children: [
-                                                        Center(child: Image.asset('assets/images/calendar2.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
-                                                        SizedBox(
-                                                          width: 3,
-                                                        ),
-                                                        Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
-                                                        // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-
-
-
-                                            ],
-
-                                          ),
-
-
-                                        ),
-                                      ]
-
-                                  ),
-                                ],
-
-                              ),
-                            ),
-                          ):Container();
-                        },
-
-                      ),
-
-                        ListView.builder(
-                          itemCount:  _con.leaverequest.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            var leaverequest = _con.leaverequest[index];
-
-
-                            return leaverequest.status =='rejected'?
-                             Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: InkWell(
-                                onTap: (){
-                                  showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-
-                                      builder: (context) {
-                                        return FractionallySizedBox(
-                                          heightFactor: 0.8,
-                                          child:  Padding(
-                                            padding: const EdgeInsets.all(7.0),
-                                            child: Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              children: [
-                                                Center(
-                                                  child: Container(
-                                                    height: 4,
-                                                    width: 60,
-                                                    decoration: BoxDecoration(
-                                                        color: Color(0xFF98A2B3),
-                                                        borderRadius: BorderRadius.circular(8)
-                                                    ),
-
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 30.0 ,left: 13),
-                                                  child: Row(
-                                                    children: [
-                                                      Image.asset('assets/images/profile.png', width: 50, height: 50),
-                                                      Spacer(),
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(8.0),
-                                                        child: Container(
-                                                          height: 28,
-                                                          width: 78,
-                                                          decoration: BoxDecoration(
-                                                              color: Color(0xFFEA7971),
-                                                              borderRadius: BorderRadius.circular(4)
-                                                          ),
-
-                                                          child: Center(child: Text("Rejected",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white))),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-
-                                                Padding(
-                                                  padding: const EdgeInsets.only(left: 13.0),
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text('Leo Rhiel Maddsen',style: TextStyle(fontSize:16,fontFamily: 'Poppins',fontWeight: FontWeight.w500,color: Color(0xFF1D2939) ),),
-                                                      Text('Ux Designer',style: TextStyle(fontSize:12,fontFamily: 'Poppins',fontWeight: FontWeight.w400,color: Color(0xFF98A2B3) ),),
-                                                      SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(left: 8.0),
-                                                        child: Row(
-
-
-                                                          children: [
-                                                            Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
-                                                            SizedBox(width: 5,),
-                                                            Text('Casual Leave',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
-
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(
-                                                        height: 10,
-                                                      ),
-                                                      Padding(
-                                                        padding: const EdgeInsets.only(left: 8.0),
-                                                        child: Row(
-
-                                                          children: [
-                                                            Image.asset('assets/images/calendar1.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
-                                                            SizedBox(
-                                                              width: 3,
-                                                            ),
-                                                            Text('2 Days',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),),
-                                                          ],
-                                                        ),
-                                                      ),
-
-                                                      Padding(
-                                                        padding: const EdgeInsets.all(8.0),
-                                                        child:
-                                                        Row(
-                                                          children: [
-                                                            Image.asset('assets/images/calendar2.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
-                                                            SizedBox(width: 5,),
-                                                            Text('21 January, 2024 - 22 January, 2024',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 14,fontFamily: 'Poppins'),)
-                                                            // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
-                                                          ],
-                                                        ),
-                                                      ),
-
-                                                    ],
-                                                  ),
-                                                ),
-                                                SizedBox(height: 16),
-                                                Center(
-                                                  child: Container(
-                                                    height: 112,
-                                                    width: 321,
-                                                    decoration: BoxDecoration(
-                                                        border: Border.all(
-                                                            color: Color(0xFFE4E7EC)
-                                                        ),
-                                                        borderRadius: BorderRadius.circular(10)
-
-                                                    ),
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.all(8.0),
-                                                      //child: Text(leaverequest.reason,),
-                                                      child: Text("Reason"),
-                                                    ),
-                                                  ),
-                                                ),
-                                                SizedBox(height: 10),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(left: 15.0),
-                                                  child: Text("Attachment",style: TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: 'Poppins',
-
-                                                      color: Color(0xFF98A2B3)),),
-                                                ),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-                                                Row(
-                                                  mainAxisAlignment: MainAxisAlignment.center,
-                                                  children: [
-                                                    Container(
-                                                      width: 155,
-                                                      height: 55,
-                                                      child: Row(
-                                                        children: [
-                                                          Container(
-                                                              decoration: BoxDecoration(
-                                                                  borderRadius: BorderRadius.circular(5),
-                                                                  border: Border.all(
-                                                                    color: Color(0xFFE9E9E9),
-                                                                  )
-                                                              ),
-                                                              child: Row(
-                                                                mainAxisAlignment: MainAxisAlignment.start,
-                                                                children: [
-                                                                  Padding(
-                                                                    padding: const EdgeInsets.only(left: 5.0),
-                                                                    child: Image.asset('assets/images/document.png',height: 22,width: 22,),
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 10,
-                                                                  ),
-                                                                  Column(
-                                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(top:8.0,right: 8),
-                                                                        child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
-                                                                      ),
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(right:10),
-                                                                        child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
-                                                                      ),
-
-                                                                    ],
-                                                                  )
-                                                                ],
-                                                              )
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                      width: 10,
-                                                    ),
-                                                    Container(
-                                                      width: 155,
-                                                      height: 55,
-                                                      child: Row(
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Container(
-                                                                  decoration: BoxDecoration(
-                                                                      borderRadius: BorderRadius.circular(5),
-                                                                      border: Border.all(
-                                                                        color: Color(0xFFE9E9E9),
-                                                                      )
-                                                                  ),
-                                                                  child: Row(
-                                                                    // mainAxisAlignment: MainAxisAlignment.start,
-                                                                    children: [
-                                                                      Padding(
-                                                                        padding: const EdgeInsets.only(left: 5.0),
-                                                                        child: Image.asset('assets/images/document.png',height: 22,width: 22,),
-                                                                      ),
-                                                                      SizedBox(
-                                                                        width: 10,
-                                                                      ),
-                                                                      Column(
-                                                                        mainAxisAlignment: MainAxisAlignment.start,
-                                                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                                                        children: [
-                                                                          Padding(
-                                                                            padding: const EdgeInsets.only(top:8.0,right: 8),
-                                                                            child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
-                                                                          ),
-                                                                          Padding(
-                                                                            padding: const EdgeInsets.only(right:10),
-                                                                            child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
-                                                                          ),
-
-                                                                        ],
-                                                                      )
-                                                                    ],
-                                                                  )
-                                                              ),
-                                                            ],
-                                                          )],
-
-
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-
-
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    // builder: (BuildContext context) {
-                                    //   return _buildBottomSheetContent();
-                                    // },
-                                  );
-                                  // buildScrollablesheet();
-                                },
-                                child: Column(
-                                  children: [
-                                    Stack(
-                                        children: [
-
-                                          Positioned(
-                                            top:6,
-                                            right: -35,
-                                            child: Container(
-                                              height: 175,
-                                              width: 191,
-                                              child: Image.asset('assets/images/beachbg.png',),
-                                            ),
-                                          ),
-                                          Positioned(
-                                            top: 75,
-                                            right: 30,
-                                            child: Container(
-                                              height: 28,
-                                              width: 78,
-                                              decoration: BoxDecoration(
-                                                  color: Color(0xFFEA7971),
-                                                  borderRadius: BorderRadius.circular(4)
-                                              ),
-
-                                              child: Center(child: Text("Rejected",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white))),
-                                            ),
-
-                                          ),
-
-
-                                          Container(
-                                            decoration: BoxDecoration(
-                                                border: Border.all(
-                                                  width: .7,
-                                                  color: Color(0xFFE4E7EC),
-
-                                                ),
-                                                color: Colors.transparent,
-                                                borderRadius: BorderRadius.circular(8)
-                                            ),
-                                            height: 175,
-                                            width: 361,
-                                            child: Column(
-                                              children: [
-
-                                                Row(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets.only(top: 20.0,left: 20),
-                                                      child: Image.asset('assets/images/profile.png', width: 40, height: 40),
-                                                    ),
-
-                                                    Padding(
-                                                      padding: EdgeInsets.only(top:5),
-                                                      child: SizedBox(
-                                                        height: 50,
-                                                        width: 250,
-                                                        child: ListTile(
-
-                                                          title: Text('Jhon',style: TextStyle(fontSize: 16,fontFamily: 'Poppins',fontWeight: FontWeight.w600,color: Color(0xFF1D2939)),),
-
-                                                          subtitle: Text('Ux Designer',style: TextStyle(fontSize:12,fontFamily: 'Poppins',fontWeight: FontWeight.w400,color: Color(0xFF98A2B3) ),),
-                                                        ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top:25.0,left: 20),
-                                                  child: Row(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
-                                                      const Padding(
-                                                        padding: EdgeInsets.only(left: 8.0),
-                                                        child: Text('Casual Leave',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
-                                                      )
-                                                    ],
-                                                  ),
-
-                                                ),
-
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top:10.0,left: 20),
-                                                  child: Row(
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: [
-                                                          Center(child: Image.asset('assets/images/calendar1.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
-                                                          SizedBox(
-                                                            width: 3,
-                                                          ),
-                                                          // Center(child: Text(leaverequest.noOfDays.toString() + '  Days',style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
-                                                          Center(child: Text('1  Days',style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
-                                                        ],
-                                                      ),
-
-
-                                                      // Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),)
-                                                    ],
-                                                  ),
-                                                ),
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top:10.0,left: 20),
-                                                  child: Row(
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.center,
-                                                        children: [
-                                                          Center(child: Image.asset('assets/images/calendar2.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
-                                                          SizedBox(
-                                                            width: 3,
-                                                          ),
-                                                          Center(child: Text('21 January, 2024 - 22 January, 2024',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 14,fontFamily: 'Poppins'),))
-                                                          // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
-                                                        ],
-                                                      ),
-
-
-
-                                                    ],
-                                                  ),
-                                                ),
-
-
-
-                                              ],
-
-                                            ),
-
-
-                                          ),
-                                        ]
-
-                                    ),
-                                  ],
-
-                                ),
-                              ),
-                            ):Container();
-                          },
-
-                        ),
+                      // ListView.builder(
+                      //   itemCount: _con.leaverequest.length,
+                      //   itemBuilder: (BuildContext context, int index) {
+                      //     var leaverequest = _con.leaverequest[index];
+                      //
+                      //     return  leaverequest.status =='approved'?
+                      //     Padding(
+                      //       padding: const EdgeInsets.all(8.0),
+                      //       child: InkWell(
+                      //         onTap: (){
+                      //           showModalBottomSheet(
+                      //               context: context,
+                      //               isScrollControlled: true,
+                      //
+                      //               builder: (context) {
+                      //                 return FractionallySizedBox(
+                      //                   heightFactor: 0.8,
+                      //                   child:  Padding(
+                      //                     padding: const EdgeInsets.all(7.0),
+                      //                     child: Column(
+                      //                       crossAxisAlignment: CrossAxisAlignment.start,
+                      //                       children: [
+                      //                         Center(
+                      //                           child: Container(
+                      //                             height: 4,
+                      //                             width: 60,
+                      //                             decoration: BoxDecoration(
+                      //                                 color: Color(0xFF98A2B3),
+                      //                                 borderRadius: BorderRadius.circular(8)
+                      //                             ),
+                      //
+                      //                           ),
+                      //                         ),
+                      //                         Padding(
+                      //                           padding: const EdgeInsets.only(top: 30.0 ,left: 13),
+                      //                           child:
+                      //                           Row(
+                      //                             children: [
+                      //                               // Ensure the avatar image loads correctly, with fallback handling for null or errors
+                      //                               Image.network(
+                      //                                 leaverequest.avatar!,
+                      //                                 width: 50,
+                      //                                 height: 50,
+                      //                                 errorBuilder: (context, error, stackTrace) {
+                      //                                   return Icon(Icons.person, size: 50); // Fallback icon
+                      //                                 },
+                      //                               ),
+                      //
+                      //                               Spacer(), // Add spacing between elements for better layout
+                      //
+                      //                               Flexible(
+                      //                                 child: Padding(
+                      //                                   padding: const EdgeInsets.all(8.0),
+                      //                                   child: Container(
+                      //                                     height: 28,
+                      //                                     decoration: BoxDecoration(
+                      //                                       color: Color(0xFF65BD95),
+                      //                                       borderRadius: BorderRadius.circular(4),
+                      //                                     ),
+                      //                                     child: Center(
+                      //                                       child: Text(
+                      //                                         "Approved",
+                      //                                         style: TextStyle(
+                      //                                           fontFamily: 'Poppins',
+                      //                                           fontSize: 12,
+                      //                                           fontWeight: FontWeight.w400,
+                      //                                           color: Colors.white,
+                      //                                         ),
+                      //                                       ),
+                      //                                     ),
+                      //                                   ),
+                      //                                 ),
+                      //                               ),
+                      //                             ],
+                      //                           ),
+                      //
+                      //                         ),
+                      //
+                      //                         Padding(
+                      //                           padding: const EdgeInsets.only(left: 13.0),
+                      //                           child: Column(
+                      //                             crossAxisAlignment: CrossAxisAlignment.start,
+                      //                             children: [
+                      //                               Text(leaverequest.username!,style: TextStyle(fontSize:16,fontFamily: 'Poppins',fontWeight: FontWeight.w500,color: Color(0xFF1D2939) ),),
+                      //                               Text('Ux Designer',style: TextStyle(fontSize:12,fontFamily: 'Poppins',fontWeight: FontWeight.w400,color: Color(0xFF98A2B3) ),),
+                      //                               SizedBox(
+                      //                                 height: 10,
+                      //                               ),
+                      //                               Padding(
+                      //                                 padding: const EdgeInsets.only(left: 8.0),
+                      //                                 child: Row(
+                      //
+                      //
+                      //                                   children: [
+                      //                                     Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
+                      //                                     SizedBox(width: 5,),
+                      //                                     Text(leaverequest.leaveType!,style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
+                      //
+                      //                                   ],
+                      //                                 ),
+                      //                               ),
+                      //                               SizedBox(
+                      //                                 height: 10,
+                      //                               ),
+                      //                               Padding(
+                      //                                 padding: const EdgeInsets.only(left: 8.0),
+                      //                                 child: Row(
+                      //
+                      //                                   children: [
+                      //                                     Image.asset('assets/images/calendar1.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
+                      //                                     SizedBox(
+                      //                                       width: 3,
+                      //                                     ),
+                      //                                     Text(leaverequest.noOfDays.toString(),style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),),
+                      //                                   ],
+                      //                                 ),
+                      //                               ),
+                      //
+                      //                               Padding(
+                      //                                 padding: const EdgeInsets.all(8.0),
+                      //                                 child:
+                      //                                 Row(
+                      //                                   children: [
+                      //                                     Image.asset('assets/images/calendar2.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
+                      //                                     SizedBox(width: 5,),
+                      //                                   Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),)
+                      //                                     // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
+                      //                                   ],
+                      //                                 ),
+                      //                               ),
+                      //
+                      //                             ],
+                      //                           ),
+                      //                         ),
+                      //                         SizedBox(height: 16),
+                      //                         Center(
+                      //                           child: Container(
+                      //                             height: 112,
+                      //                             width: 321,
+                      //                             decoration: BoxDecoration(
+                      //                                 border: Border.all(
+                      //                                     color: Color(0xFFE4E7EC)
+                      //                                 ),
+                      //                                 borderRadius: BorderRadius.circular(10)
+                      //
+                      //                             ),
+                      //                             child: Padding(
+                      //                               padding: const EdgeInsets.all(8.0),
+                      //                               //child: Text(leaverequest.reason,),
+                      //                               child: Text(leaverequest.reason!),
+                      //                             ),
+                      //                           ),
+                      //                         ),
+                      //                         SizedBox(height: 10),
+                      //                         Padding(
+                      //                           padding: const EdgeInsets.only(left: 15.0),
+                      //                           child: Text("Attachment",style: TextStyle(
+                      //                               fontSize: 12,
+                      //                               fontFamily: 'Poppins',
+                      //
+                      //                               color: Color(0xFF98A2B3)),),
+                      //                         ),
+                      //                         SizedBox(
+                      //                           height: 10,
+                      //                         ),
+                      //                         Row(
+                      //                           mainAxisAlignment: MainAxisAlignment.center,
+                      //                           children: [
+                      //                             Container(
+                      //                               width: 155,
+                      //                               height: 55,
+                      //                               child: Row(
+                      //                                 children: [
+                      //                                   Container(
+                      //                                       decoration: BoxDecoration(
+                      //                                           borderRadius: BorderRadius.circular(5),
+                      //                                           border: Border.all(
+                      //                                             color: Color(0xFFE9E9E9),
+                      //                                           )
+                      //                                       ),
+                      //                                       child: Row(
+                      //                                         mainAxisAlignment: MainAxisAlignment.start,
+                      //                                         children: [
+                      //                                           Padding(
+                      //                                             padding: const EdgeInsets.only(left: 5.0),
+                      //                                             child: Image.asset('assets/images/document.png',height: 22,width: 22,),
+                      //                                           ),
+                      //                                           SizedBox(
+                      //                                             width: 10,
+                      //                                           ),
+                      //                                           Column(
+                      //                                             mainAxisAlignment: MainAxisAlignment.start,
+                      //                                             crossAxisAlignment: CrossAxisAlignment.start,
+                      //                                             children: [
+                      //                                               Padding(
+                      //                                                 padding: const EdgeInsets.only(top:8.0,right: 8),
+                      //                                                 child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
+                      //                                               ),
+                      //                                               Padding(
+                      //                                                 padding: const EdgeInsets.only(right:10),
+                      //                                                 child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
+                      //                                               ),
+                      //
+                      //                                             ],
+                      //                                           )
+                      //                                         ],
+                      //                                       )
+                      //                                   ),
+                      //                                 ],
+                      //                               ),
+                      //                             ),
+                      //                             SizedBox(
+                      //                               width: 10,
+                      //                             ),
+                      //                             Container(
+                      //                               width: 155,
+                      //                               height: 55,
+                      //                               child: Row(
+                      //                                 children: [
+                      //                                   Row(
+                      //                                     children: [
+                      //                                       Container(
+                      //                                           decoration: BoxDecoration(
+                      //                                               borderRadius: BorderRadius.circular(5),
+                      //                                               border: Border.all(
+                      //                                                 color: Color(0xFFE9E9E9),
+                      //                                               )
+                      //                                           ),
+                      //                                           child: Row(
+                      //                                             // mainAxisAlignment: MainAxisAlignment.start,
+                      //                                             children: [
+                      //                                               Padding(
+                      //                                                 padding: const EdgeInsets.only(left: 5.0),
+                      //                                                 child: Image.asset('assets/images/document.png',height: 22,width: 22,),
+                      //                                               ),
+                      //                                               SizedBox(
+                      //                                                 width: 10,
+                      //                                               ),
+                      //                                               Column(
+                      //                                                 mainAxisAlignment: MainAxisAlignment.start,
+                      //                                                 crossAxisAlignment: CrossAxisAlignment.start,
+                      //                                                 children: [
+                      //                                                   Padding(
+                      //                                                     padding: const EdgeInsets.only(top:8.0,right: 8),
+                      //                                                     child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
+                      //                                                   ),
+                      //                                                   Padding(
+                      //                                                     padding: const EdgeInsets.only(right:10),
+                      //                                                     child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
+                      //                                                   ),
+                      //
+                      //                                                 ],
+                      //                                               )
+                      //                                             ],
+                      //                                           )
+                      //                                       ),
+                      //                                     ],
+                      //                                   )],
+                      //
+                      //
+                      //                               ),
+                      //                             ),
+                      //                           ],
+                      //                         ),
+                      //
+                      //
+                      //                       ],
+                      //                     ),
+                      //                   ),
+                      //                 );
+                      //               }
+                      //             // builder: (BuildContext context) {
+                      //             //   return _buildBottomSheetContent();
+                      //             // },
+                      //           );
+                      //           // buildScrollablesheet();
+                      //         },
+                      //         child: Column(
+                      //           children: [
+                      //             Stack(
+                      //                 children: [
+                      //                   Positioned(
+                      //                     top:6,
+                      //                     right: -35,
+                      //                     child: Container(
+                      //                       height: 175,
+                      //                       width: 191,
+                      //                       child: Image.asset('assets/images/beachbg.png',),
+                      //                     ),
+                      //                   ),
+                      //                   Positioned(
+                      //                     top: 75,
+                      //                     right: 30,
+                      //                     child: Container(
+                      //                       height: 28,
+                      //                       width: 78,
+                      //                       decoration: BoxDecoration(
+                      //                           color: Color(0xFF65BD95),
+                      //                           borderRadius: BorderRadius.circular(4)
+                      //                       ),
+                      //
+                      //                       child: Center(child: Text("Approved",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white))),
+                      //                     ),
+                      //                     // child: ElevatedButton.icon(
+                      //                     //
+                      //                     //     onPressed: (){},
+                      //                     //     style: ElevatedButton.styleFrom(
+                      //                     //       backgroundColor: Color(0xFF65BD95),
+                      //                     //       elevation: .5,
+                      //                     //
+                      //                     //       shape: RoundedRectangleBorder(
+                      //                     //         borderRadius: BorderRadius.circular(4.0),
+                      //                     //       ),
+                      //                     //     ),
+                      //                     //     label:  const Text("Approved",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white),)),
+                      //                   ),
+                      //                   Container(
+                      //                     decoration: BoxDecoration(
+                      //                         border: Border.all(
+                      //                           width: .7,
+                      //                           color: Color(0xFFE4E7EC),
+                      //
+                      //                         ),
+                      //                         color: Colors.transparent,
+                      //                         borderRadius: BorderRadius.circular(8)
+                      //                     ),
+                      //                     height: 175,
+                      //                     width: 361,
+                      //                     child: Column(
+                      //                       children: [
+                      //
+                      //                         Row(
+                      //                           children: [
+                      //                             Padding(
+                      //                               padding: const EdgeInsets.only(top: 10.0, left: 10),
+                      //                               child: Image.network(
+                      //                                 leaverequest.avatar!,
+                      //                                 width: 40,
+                      //                                 height: 40,
+                      //                                 fit: BoxFit.cover, // Ensures the image fits its container
+                      //                               ),
+                      //                             ),
+                      //                             SizedBox(width: 10), // Add spacing between elements if needed
+                      //                             Flexible(
+                      //                               child: Text(
+                      //                                 leaverequest.username ?? "No name",
+                      //                                 style: TextStyle(fontSize: 16),
+                      //                                 overflow: TextOverflow.ellipsis, // Truncate text if it's too long
+                      //                               ),
+                      //                             ),
+                      //                           ],
+                      //                         ),
+                      //                         Padding(
+                      //                           padding:  EdgeInsets.only(top:25.0,left: 20),
+                      //                           child: Row(
+                      //                             crossAxisAlignment: CrossAxisAlignment.start,
+                      //                             children: [
+                      //                               Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
+                      //                                Padding(
+                      //                                 padding: EdgeInsets.only(left: 8.0),
+                      //                                 child: Text(leaverequest.leaveType!,style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
+                      //                               )
+                      //                             ],
+                      //                           ),
+                      //
+                      //                         ),
+                      //
+                      //                         Padding(
+                      //                           padding: const EdgeInsets.only(top:10.0,left: 20),
+                      //                           child: Row(
+                      //                             children: [
+                      //                               Row(
+                      //                                 mainAxisAlignment: MainAxisAlignment.center,
+                      //                                 children: [
+                      //                                   Center(child: Image.asset('assets/images/calendar1.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
+                      //                                   SizedBox(
+                      //                                     width: 3,
+                      //                                   ),
+                      //                                   // Center(child: Text(leaverequest.noOfDays.toString() + '  Days',style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
+                      //                                   Center(child: Text(leaverequest.noOfDays.toString(),style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
+                      //                                 ],
+                      //                               ),
+                      //
+                      //
+                      //                               // Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),)
+                      //                             ],
+                      //                           ),
+                      //                         ),
+                      //                         Padding(
+                      //                           padding: const EdgeInsets.only(top:10.0,left: 20),
+                      //                           child: Row(
+                      //                             children: [
+                      //                               Row(
+                      //                                 mainAxisAlignment: MainAxisAlignment.center,
+                      //                                 children: [
+                      //                                   Center(child: Image.asset('assets/images/calendar2.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
+                      //                                   SizedBox(
+                      //                                     width: 3,
+                      //                                   ),
+                      //                                   Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
+                      //                                   // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
+                      //                                 ],
+                      //                               ),
+                      //                             ],
+                      //                           ),
+                      //                         ),
+                      //
+                      //
+                      //
+                      //                       ],
+                      //
+                      //                     ),
+                      //
+                      //
+                      //                   ),
+                      //                 ]
+                      //
+                      //             ),
+                      //           ],
+                      //
+                      //         ),
+                      //       ),
+                      //     ):Container();
+                      //   },
+                      //
+                      // ),
+                      //
+                      //   ListView.builder(
+                      //     itemCount:  _con.leaverequest.length,
+                      //     itemBuilder: (BuildContext context, int index) {
+                      //       var leaverequest = _con.leaverequest[index];
+                      //
+                      //
+                      //       return leaverequest.status =='rejected'?
+                      //        Padding(
+                      //         padding: const EdgeInsets.all(8.0),
+                      //         child: InkWell(
+                      //           onTap: (){
+                      //             showModalBottomSheet(
+                      //                 context: context,
+                      //                 isScrollControlled: true,
+                      //
+                      //                 builder: (context) {
+                      //                   return FractionallySizedBox(
+                      //                     heightFactor: 0.8,
+                      //                     child:  Padding(
+                      //                       padding: const EdgeInsets.all(7.0),
+                      //                       child: Column(
+                      //                         crossAxisAlignment: CrossAxisAlignment.start,
+                      //                         children: [
+                      //                           Center(
+                      //                             child: Container(
+                      //                               height: 4,
+                      //                               width: 60,
+                      //                               decoration: BoxDecoration(
+                      //                                   color: Color(0xFF98A2B3),
+                      //                                   borderRadius: BorderRadius.circular(8)
+                      //                               ),
+                      //
+                      //                             ),
+                      //                           ),
+                      //                           Padding(
+                      //                             padding: const EdgeInsets.only(top: 30.0 ,left: 13),
+                      //                             child: Row(
+                      //                               children: [
+                      //                                 Image.asset('assets/images/profile.png', width: 50, height: 50),
+                      //                                 Spacer(),
+                      //                                 Padding(
+                      //                                   padding: const EdgeInsets.all(8.0),
+                      //                                   child: Container(
+                      //                                     height: 28,
+                      //                                     width: 78,
+                      //                                     decoration: BoxDecoration(
+                      //                                         color: Color(0xFFEA7971),
+                      //                                         borderRadius: BorderRadius.circular(4)
+                      //                                     ),
+                      //
+                      //                                     child: Center(child: Text("Rejected",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white))),
+                      //                                   ),
+                      //                                 ),
+                      //                               ],
+                      //                             ),
+                      //                           ),
+                      //
+                      //                           Padding(
+                      //                             padding: const EdgeInsets.only(left: 13.0),
+                      //                             child: Column(
+                      //                               crossAxisAlignment: CrossAxisAlignment.start,
+                      //                               children: [
+                      //                                 Text('Leo Rhiel Maddsen',style: TextStyle(fontSize:16,fontFamily: 'Poppins',fontWeight: FontWeight.w500,color: Color(0xFF1D2939) ),),
+                      //                                 Text('Ux Designer',style: TextStyle(fontSize:12,fontFamily: 'Poppins',fontWeight: FontWeight.w400,color: Color(0xFF98A2B3) ),),
+                      //                                 SizedBox(
+                      //                                   height: 10,
+                      //                                 ),
+                      //                                 Padding(
+                      //                                   padding: const EdgeInsets.only(left: 8.0),
+                      //                                   child: Row(
+                      //
+                      //
+                      //                                     children: [
+                      //                                       Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
+                      //                                       SizedBox(width: 5,),
+                      //                                       Text('Casual Leave',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
+                      //
+                      //                                     ],
+                      //                                   ),
+                      //                                 ),
+                      //                                 SizedBox(
+                      //                                   height: 10,
+                      //                                 ),
+                      //                                 Padding(
+                      //                                   padding: const EdgeInsets.only(left: 8.0),
+                      //                                   child: Row(
+                      //
+                      //                                     children: [
+                      //                                       Image.asset('assets/images/calendar1.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
+                      //                                       SizedBox(
+                      //                                         width: 3,
+                      //                                       ),
+                      //                                       Text('2 Days',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),),
+                      //                                     ],
+                      //                                   ),
+                      //                                 ),
+                      //
+                      //                                 Padding(
+                      //                                   padding: const EdgeInsets.all(8.0),
+                      //                                   child:
+                      //                                   Row(
+                      //                                     children: [
+                      //                                       Image.asset('assets/images/calendar2.png',height: 22,width: 22,color: Color(0xFF98A2B3),),
+                      //                                       SizedBox(width: 5,),
+                      //                                       Text('21 January, 2024 - 22 January, 2024',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 14,fontFamily: 'Poppins'),)
+                      //                                       // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
+                      //                                     ],
+                      //                                   ),
+                      //                                 ),
+                      //
+                      //                               ],
+                      //                             ),
+                      //                           ),
+                      //                           SizedBox(height: 16),
+                      //                           Center(
+                      //                             child: Container(
+                      //                               height: 112,
+                      //                               width: 321,
+                      //                               decoration: BoxDecoration(
+                      //                                   border: Border.all(
+                      //                                       color: Color(0xFFE4E7EC)
+                      //                                   ),
+                      //                                   borderRadius: BorderRadius.circular(10)
+                      //
+                      //                               ),
+                      //                               child: Padding(
+                      //                                 padding: const EdgeInsets.all(8.0),
+                      //                                 //child: Text(leaverequest.reason,),
+                      //                                 child: Text("Reason"),
+                      //                               ),
+                      //                             ),
+                      //                           ),
+                      //                           SizedBox(height: 10),
+                      //                           Padding(
+                      //                             padding: const EdgeInsets.only(left: 15.0),
+                      //                             child: Text("Attachment",style: TextStyle(
+                      //                                 fontSize: 12,
+                      //                                 fontFamily: 'Poppins',
+                      //
+                      //                                 color: Color(0xFF98A2B3)),),
+                      //                           ),
+                      //                           SizedBox(
+                      //                             height: 10,
+                      //                           ),
+                      //                           Row(
+                      //                             mainAxisAlignment: MainAxisAlignment.center,
+                      //                             children: [
+                      //                               Container(
+                      //                                 width: 155,
+                      //                                 height: 55,
+                      //                                 child: Row(
+                      //                                   children: [
+                      //                                     Container(
+                      //                                         decoration: BoxDecoration(
+                      //                                             borderRadius: BorderRadius.circular(5),
+                      //                                             border: Border.all(
+                      //                                               color: Color(0xFFE9E9E9),
+                      //                                             )
+                      //                                         ),
+                      //                                         child: Row(
+                      //                                           mainAxisAlignment: MainAxisAlignment.start,
+                      //                                           children: [
+                      //                                             Padding(
+                      //                                               padding: const EdgeInsets.only(left: 5.0),
+                      //                                               child: Image.asset('assets/images/document.png',height: 22,width: 22,),
+                      //                                             ),
+                      //                                             SizedBox(
+                      //                                               width: 10,
+                      //                                             ),
+                      //                                             Column(
+                      //                                               mainAxisAlignment: MainAxisAlignment.start,
+                      //                                               crossAxisAlignment: CrossAxisAlignment.start,
+                      //                                               children: [
+                      //                                                 Padding(
+                      //                                                   padding: const EdgeInsets.only(top:8.0,right: 8),
+                      //                                                   child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
+                      //                                                 ),
+                      //                                                 Padding(
+                      //                                                   padding: const EdgeInsets.only(right:10),
+                      //                                                   child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
+                      //                                                 ),
+                      //
+                      //                                               ],
+                      //                                             )
+                      //                                           ],
+                      //                                         )
+                      //                                     ),
+                      //                                   ],
+                      //                                 ),
+                      //                               ),
+                      //                               SizedBox(
+                      //                                 width: 10,
+                      //                               ),
+                      //                               Container(
+                      //                                 width: 155,
+                      //                                 height: 55,
+                      //                                 child: Row(
+                      //                                   children: [
+                      //                                     Row(
+                      //                                       children: [
+                      //                                         Container(
+                      //                                             decoration: BoxDecoration(
+                      //                                                 borderRadius: BorderRadius.circular(5),
+                      //                                                 border: Border.all(
+                      //                                                   color: Color(0xFFE9E9E9),
+                      //                                                 )
+                      //                                             ),
+                      //                                             child: Row(
+                      //                                               // mainAxisAlignment: MainAxisAlignment.start,
+                      //                                               children: [
+                      //                                                 Padding(
+                      //                                                   padding: const EdgeInsets.only(left: 5.0),
+                      //                                                   child: Image.asset('assets/images/document.png',height: 22,width: 22,),
+                      //                                                 ),
+                      //                                                 SizedBox(
+                      //                                                   width: 10,
+                      //                                                 ),
+                      //                                                 Column(
+                      //                                                   mainAxisAlignment: MainAxisAlignment.start,
+                      //                                                   crossAxisAlignment: CrossAxisAlignment.start,
+                      //                                                   children: [
+                      //                                                     Padding(
+                      //                                                       padding: const EdgeInsets.only(top:8.0,right: 8),
+                      //                                                       child: Text("Prescription2.pdf",style: TextStyle(fontSize: 12,fontWeight:FontWeight.w400,fontFamily: 'Poppins'),),
+                      //                                                     ),
+                      //                                                     Padding(
+                      //                                                       padding: const EdgeInsets.only(right:10),
+                      //                                                       child: Text("100kb",style: TextStyle(fontSize: 10,fontWeight:FontWeight.w400,fontFamily: 'Poppins',color: Color(0xFF98A2B3)),),
+                      //                                                     ),
+                      //
+                      //                                                   ],
+                      //                                                 )
+                      //                                               ],
+                      //                                             )
+                      //                                         ),
+                      //                                       ],
+                      //                                     )],
+                      //
+                      //
+                      //                                 ),
+                      //                               ),
+                      //                             ],
+                      //                           ),
+                      //
+                      //
+                      //                         ],
+                      //                       ),
+                      //                     ),
+                      //                   );
+                      //                 }
+                      //               // builder: (BuildContext context) {
+                      //               //   return _buildBottomSheetContent();
+                      //               // },
+                      //             );
+                      //             // buildScrollablesheet();
+                      //           },
+                      //           child: Column(
+                      //             children: [
+                      //               Stack(
+                      //                   children: [
+                      //
+                      //                     Positioned(
+                      //                       top:6,
+                      //                       right: -35,
+                      //                       child: Container(
+                      //                         height: 175,
+                      //                         width: 191,
+                      //                         child: Image.asset('assets/images/beachbg.png',),
+                      //                       ),
+                      //                     ),
+                      //                     Positioned(
+                      //                       top: 75,
+                      //                       right: 30,
+                      //                       child: Container(
+                      //                         height: 28,
+                      //                         width: 78,
+                      //                         decoration: BoxDecoration(
+                      //                             color: Color(0xFFEA7971),
+                      //                             borderRadius: BorderRadius.circular(4)
+                      //                         ),
+                      //
+                      //                         child: Center(child: Text("Rejected",style: TextStyle(fontFamily:'Poppins',fontSize: 12,fontWeight: FontWeight.w400,color: Colors.white))),
+                      //                       ),
+                      //
+                      //                     ),
+                      //
+                      //
+                      //                     Container(
+                      //                       decoration: BoxDecoration(
+                      //                           border: Border.all(
+                      //                             width: .7,
+                      //                             color: Color(0xFFE4E7EC),
+                      //
+                      //                           ),
+                      //                           color: Colors.transparent,
+                      //                           borderRadius: BorderRadius.circular(8)
+                      //                       ),
+                      //                       height: 175,
+                      //                       width: 361,
+                      //                       child: Column(
+                      //                         children: [
+                      //
+                      //                           Row(
+                      //                             crossAxisAlignment: CrossAxisAlignment.start,
+                      //                             children: [
+                      //                               Padding(
+                      //                                 padding: const EdgeInsets.only(top: 20.0,left: 20),
+                      //                                 child: Image.asset('assets/images/profile.png', width: 40, height: 40),
+                      //                               ),
+                      //
+                      //                               Padding(
+                      //                                 padding: EdgeInsets.only(top:5),
+                      //                                 child: SizedBox(
+                      //                                   height: 50,
+                      //                                   width: 250,
+                      //                                   child: ListTile(
+                      //
+                      //                                     title: Text('Jhon',style: TextStyle(fontSize: 16,fontFamily: 'Poppins',fontWeight: FontWeight.w600,color: Color(0xFF1D2939)),),
+                      //
+                      //                                     subtitle: Text('Ux Designer',style: TextStyle(fontSize:12,fontFamily: 'Poppins',fontWeight: FontWeight.w400,color: Color(0xFF98A2B3) ),),
+                      //                                   ),
+                      //                                 ),
+                      //                               )
+                      //                             ],
+                      //                           ),
+                      //                           Padding(
+                      //                             padding: const EdgeInsets.only(top:25.0,left: 20),
+                      //                             child: Row(
+                      //                               crossAxisAlignment: CrossAxisAlignment.start,
+                      //                               children: [
+                      //                                 Image.asset('assets/images/beach.png',height: 22,width: 22,color: Color(0xFF030303),),
+                      //                                 const Padding(
+                      //                                   padding: EdgeInsets.only(left: 8.0),
+                      //                                   child: Text('Casual Leave',style: TextStyle(fontSize: 14,fontWeight: FontWeight.w400,color: Color(0xFF030303),fontFamily: 'Poppins'),),
+                      //                                 )
+                      //                               ],
+                      //                             ),
+                      //
+                      //                           ),
+                      //
+                      //                           Padding(
+                      //                             padding: const EdgeInsets.only(top:10.0,left: 20),
+                      //                             child: Row(
+                      //                               children: [
+                      //                                 Row(
+                      //                                   mainAxisAlignment: MainAxisAlignment.center,
+                      //                                   children: [
+                      //                                     Center(child: Image.asset('assets/images/calendar1.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
+                      //                                     SizedBox(
+                      //                                       width: 3,
+                      //                                     ),
+                      //                                     // Center(child: Text(leaverequest.noOfDays.toString() + '  Days',style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
+                      //                                     Center(child: Text('1  Days',style: TextStyle(fontSize: 12,fontWeight: FontWeight.w400,color: Color(0xFF98A2B3),fontFamily: 'Poppins'),)),
+                      //                                   ],
+                      //                                 ),
+                      //
+                      //
+                      //                                 // Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),)
+                      //                               ],
+                      //                             ),
+                      //                           ),
+                      //                           Padding(
+                      //                             padding: const EdgeInsets.only(top:10.0,left: 20),
+                      //                             child: Row(
+                      //                               children: [
+                      //                                 Row(
+                      //                                   mainAxisAlignment: MainAxisAlignment.center,
+                      //                                   children: [
+                      //                                     Center(child: Image.asset('assets/images/calendar2.png',height: 20,width: 20,color: Color(0xFF98A2B3),)),
+                      //                                     SizedBox(
+                      //                                       width: 3,
+                      //                                     ),
+                      //                                     Center(child: Text('21 January, 2024 - 22 January, 2024',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 14,fontFamily: 'Poppins'),))
+                      //                                     // Center(child: Text('${formatDate(leaverequest.startDate.toString())} - ${formatDate(leaverequest.endDate.toString())}',style: TextStyle(color: Color(0xFF98A2B3),fontSize: 12,fontFamily: 'Poppins'),))
+                      //                                   ],
+                      //                                 ),
+                      //
+                      //
+                      //
+                      //                               ],
+                      //                             ),
+                      //                           ),
+                      //
+                      //
+                      //
+                      //                         ],
+                      //
+                      //                       ),
+                      //
+                      //
+                      //                     ),
+                      //                   ]
+                      //
+                      //               ),
+                      //             ],
+                      //
+                      //           ),
+                      //         ),
+                      //       ):Container();
+                      //     },
+                      //
+                      //   ),
 
                       ],
                     ),

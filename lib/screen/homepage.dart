@@ -33,7 +33,7 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends StateMVC<Homepage> {
   AttendanceController? attendanceController = null;
   HomePageController? homePageController = null;
-  List<String?> quickmenu = [' Apply\n Leave',' Regularize\n Attendance', ' Leave\n Request','Regularize\n Request'];
+  List<String?> quickmenu = [' Apply\n Leave',' Regularize\n Attendance', ' Leave\n Approval','Regularize\n Approval'];
   List<String>? listimage =['assets/images/login.png','assets/images/check-square.png','assets/images/organization.png','assets/images/beach2.png'];
   //List<String>? leavetype =['Sick Leave','Paid Leave','Causal Leave','Maternity Leave'];
   List<String>? leavetypeimage = ['assets/images/Vector.png','assets/images/moneyfont.png','assets/images/beach2.png','assets/images/iconoir_stroller.png'];
@@ -69,6 +69,7 @@ class _HomepageState extends StateMVC<Homepage> {
    // _restoreTimer();
     _loadState();
     _loadpermission();
+    _loadpersonaldetails ();
 homePageController?.fetchleavetype();
     setState(() {
       _loadAttendanceStatus();
@@ -91,8 +92,7 @@ homePageController?.fetchleavetype();
     homePageController?.fetchUpcominghoilday().then((_){
       print(homePageController?.upcomingholiday.length);
       homePageController?.fetchUpcomingBirthday().then((_){
-        print(' Upcoming Birthday ${ homePageController?.upcomingbirthday.length}');
-
+        print('Upcoming Birthday ${ homePageController?.upcomingbirthday.length}');
         homePageController?.fetchleavetype().then((value){
           print("Leave Balance");
           print(value);
@@ -101,27 +101,15 @@ homePageController?.fetchleavetype();
 
       });
     });
-
-
-
-
-
     attendanceController?.fetchResponse().then((_) {
       print('Home Page: ${attendanceController?.attendancelist.length}');
       print('filtered list : ${attendanceController?.filteredAttendancelist.length}');
     });
-
-
-
-
     // Format date
     setState(() {
       DateTime today = DateTime.now();
       formattedDate = DateFormat('d MMMM, yyyy').format(today);
     });
-
-
-
 
   }
   Future<void> _loadbithday() async {
@@ -133,6 +121,10 @@ homePageController?.fetchleavetype();
     await homePageController?.fetchrolepermission();
     print(homePageController?.permission?.permission?.self);
 
+  }
+  Future<void> _loadpersonaldetails () async{
+    await homePageController?.fetchPersonalDetails();
+    print(homePageController?.personalDetails?.firstname);
   }
   Future<void> _loadState() async {
     final prefs = await SharedPreferences.getInstance();
@@ -736,7 +728,7 @@ final url = AppConstant().checkout;
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 //Center(child: Text('Welcome  ${widget.email}',style: TextStyle(fontFamily: 'Poppins',color: Color(0xFF98A2B3),fontSize:14 ),)),
-                                Center(child: Text('Welcome',style: TextStyle(fontFamily: 'Poppins',color: Color(0xFF98A2B3),fontSize:14 ),)),
+                                Center(child: Text('Welcome ${homePageController?.personalDetails?.firstname}',style: TextStyle(fontFamily: 'Poppins',color: Color(0xFF98A2B3),fontSize:14 ),)),
                                 SizedBox(height: 6,),
                                 Center(child: Text('Lets begin the day!',style: TextStyle(fontFamily: 'Poppins',color: Color(0xFF004AAD),fontSize:16 ),))
                               ],

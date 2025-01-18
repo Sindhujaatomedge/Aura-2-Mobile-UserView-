@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:sampleaura/controller/holiday.dart';
+import 'package:sampleaura/widget/attendanceself.dart';
 class SelfHoliday extends StatefulWidget {
   const SelfHoliday({super.key});
 
@@ -29,13 +30,22 @@ class _SelfHolidayState extends StateMVC<SelfHoliday> {
     super.initState();
     setState(() {
       _con?.fetchholiday();
+      print(_con?.isLoading);
     });
+    _Loadholiday();
+
  // setState(() {
  //   _con?.fetchholiday().then((_){
  //     print(_con?.holidaylist.length);
  //
  //   });
  // });
+  }
+
+  Future <void> _Loadholiday()async {
+   await _con?.fetchholiday();
+   print(_con?.isLoading);
+
   }
   @override
   Widget build(BuildContext context) {
@@ -80,7 +90,13 @@ class _SelfHolidayState extends StateMVC<SelfHoliday> {
                   ),
                   Expanded(child: TabBarView(children: [
 
-                   ListView.builder(
+                   _con!.isLoading ? ListView.builder(
+                     itemCount : 4,
+                     itemBuilder: (BuildContext context, int index) {
+                     return   AttendanceShimmer();
+                   },
+
+                   ) :ListView.builder(
                      itemCount:_con?.holidaylist.length,
                      itemBuilder: (BuildContext context, int index) {
                        var holiday = _con?.holidaylist[index];
@@ -133,7 +149,7 @@ class _SelfHolidayState extends StateMVC<SelfHoliday> {
                                                children: [
                                                  Image.asset('assets/images/calendar1.png',height: 17.42,width: 16.5,),
                                                  SizedBox(width: 5,),
-                                                 Text('2 Days',style:TextStyle(fontFamily: 'Poppins',fontSize:12,fontWeight: FontWeight.w400 ),)
+                                                // Text('2 Days',style:TextStyle(fontFamily: 'Poppins',fontSize:12,fontWeight: FontWeight.w400 ),)
                                                ],
                                              ),
                                              SizedBox(

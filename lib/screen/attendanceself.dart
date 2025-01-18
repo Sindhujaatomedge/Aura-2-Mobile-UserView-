@@ -116,9 +116,31 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
 
     if (selectedTime != null) {
       final String formattedInTime = selectedTime.format(context);
+
+      // Convert 12-hour format to 24-hour format
+      final String time24HourFormat = _convertTo24HourFormat(formattedInTime);
+
+      // setState(() {
+      //   _checkin.text = time24HourFormat;
+      // });
       setState(() {
         _checkin.text = formattedInTime;
       });
+    }
+  }
+
+// Function to convert 12-hour time to 24-hour format
+  String _convertTo24HourFormat(String time12Hour) {
+    try {
+      // Parse the 12-hour time format string into a DateTime object
+      DateFormat inputFormat = DateFormat("h:mm a"); // for 12-hour time (e.g., 4:00 PM)
+      DateTime dateTime = inputFormat.parse(time12Hour);
+
+      // Format it to 24-hour time format (e.g., 16:00:00)
+      DateFormat outputFormat = DateFormat("HH:mm:ss");
+      return outputFormat.format(dateTime);
+    } catch (e) {
+      return "Invalid time format";
     }
   }
 
@@ -146,19 +168,84 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
     );
 
     if (selectedTime != null) {
-      final String formattedInTime = selectedTime.format(context);
+      final String formattedOutTime = selectedTime.format(context);
+
+      // Convert 12-hour format to 24-hour format
+      final String time24HourFormat = _convertTo24HourFormat1(formattedOutTime);
+
+      // setState(() {
+      //   _checkout.text = time24HourFormat;
+      // });
       setState(() {
-        _checkout.text = formattedInTime;
+        _checkout.text = formattedOutTime;
       });
     }
   }
 
+// Function to convert 12-hour time to 24-hour format
+  String _convertTo24HourFormat1(String time12Hour) {
+    try {
+      // Parse the 12-hour time format string into a DateTime object
+      DateFormat inputFormat = DateFormat("h:mm a"); // for 12-hour time (e.g., 4:00 PM)
+      DateTime dateTime = inputFormat.parse(time12Hour);
+
+      // Format it to 24-hour time format (e.g., 16:00:00)
+      DateFormat outputFormat = DateFormat("HH:mm:ss");
+      return outputFormat.format(dateTime);
+    } catch (e) {
+      return "Invalid time format";
+    }
+  }
+
+  // Future<void> _fromselectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(), // Default date shown in the picker
+  //     firstDate: DateTime(2000), // Earliest selectable date
+  //     lastDate: DateTime(2100), // Latest selectable date
+  //     builder: (BuildContext context, Widget? child) {
+  //       return Theme(
+  //         data: ThemeData.light().copyWith(
+  //           primaryColor: Color(0xFF004AAD), // Header background color
+  //           colorScheme: ColorScheme.light(
+  //             primary: Color(0xFF004AAD), // Selected date and header text color
+  //           ),
+  //           dialogBackgroundColor: Colors.white, // Picker background color
+  //           textButtonTheme: TextButtonThemeData(
+  //             style: TextButton.styleFrom(
+  //               foregroundColor: Color(0xFF004AAD), // Button text color
+  //             ),
+  //           ),
+  //         ),
+  //         child: child!,
+  //       );
+  //     },
+  //   );
+  //
+  //   if (picked != null && picked != _fromselectedDate) {
+  //     setState(() {
+  //       _fromselectedDate = picked;
+  //       _fromdateController.text =
+  //           DateFormat('yyyy-MM-dd').format(_fromselectedDate!);
+  //     });
+  //
+  //     from_date = DateFormat('yyyy-MM-dd').format(_fromselectedDate!);
+  //     print("Selected Date: $from_date");
+  //   }
+  // }
   Future<void> _fromselectDate(BuildContext context) async {
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+
+    // Calculate the date three months from now
+    DateTime lastSelectableDate = currentDate.add(Duration(days: 90)); // 3 months ahead
+    DateTime firstSelectableDate = currentDate.subtract(Duration(days: 92));
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(), // Default date shown in the picker
-      firstDate: DateTime(2000), // Earliest selectable date
-      lastDate: DateTime(2100), // Latest selectable date
+      initialDate: _fromselectedDate ?? currentDate, // Use current date if _fromselectedDate is null
+      firstDate: firstSelectableDate, // Earliest selectable date
+      lastDate: lastSelectableDate, // Latest selectable date (3 months from today)
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -178,15 +265,15 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
       },
     );
 
-    if (picked != null && picked != _fromselectedDate) {
+    if (picked != null) {
       setState(() {
         _fromselectedDate = picked;
-        _fromdateController.text =
-            DateFormat('yyyy-MM-dd').format(_fromselectedDate!);
+        _fromdateController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the TextFormField with the selected date
       });
 
-      from_date = DateFormat('yyyy-MM-dd').format(_fromselectedDate!);
+      from_date = DateFormat('yyyy-MM-dd').format(picked); // Update the `from_date` variable
       print("Selected Date: $from_date");
+      _fromdateController.text = from_date; // Set the selected date in the controller
     }
   }
 
@@ -238,12 +325,56 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
     return formattedTotal;
   }
 
+  // Future<void> _toselectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2000), // Earliest date allowed
+  //     lastDate: DateTime(2100),
+  //     builder: (BuildContext context, Widget? child) {
+  //       return Theme(
+  //         data: ThemeData.light().copyWith(
+  //           primaryColor: Color(0xFF004AAD), // Header background color
+  //           colorScheme: ColorScheme.light(
+  //             primary: Color(0xFF004AAD), // Selected date and header text color
+  //           ),
+  //           dialogBackgroundColor: Colors.white, // Picker background color
+  //           textButtonTheme: TextButtonThemeData(
+  //             style: TextButton.styleFrom(
+  //               foregroundColor: Color(0xFF004AAD), // Button text color
+  //             ),
+  //           ),
+  //         ),
+  //         child: child!,
+  //       );
+  //     }, // Latest date allowed
+  //   );
+  //   if (picked != null && picked != _toselectedDate) {
+  //     setState(() {
+  //       _toselectedDate = picked;
+  //       _todateController.text =
+  //           DateFormat('yyyy-MM-dd').format(_toselectedDate!);
+  //     });
+  //     to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!);
+  //
+  //     print(to_date);
+  //     "Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}";
+  //   }
+  // }
   Future<void> _toselectDate(BuildContext context) async {
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+
+    // Calculate the date three months from now
+    DateTime lastSelectableDate = currentDate.add(Duration(days: 90)); // 3 months ahead
+    DateTime firstSelectableDate = currentDate.subtract(Duration(days: 92)); // 3 months from today as the earliest selectable date
+
     final DateTime? picked = await showDatePicker(
+
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000), // Earliest date allowed
-      lastDate: DateTime(2100),
+      initialDate: _toselectedDate ?? currentDate, // Default to the selected date or current date
+      firstDate: firstSelectableDate, // Earliest selectable date (90 days from today)
+      lastDate: lastSelectableDate, // Latest selectable date (3 months from today)
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -260,19 +391,23 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
           ),
           child: child!,
         );
-      }, // Latest date allowed
+      },
     );
+
     if (picked != null && picked != _toselectedDate) {
       setState(() {
-        _toselectedDate = picked;
-        _todateController.text =
-            DateFormat('yyyy-MM-dd').format(_toselectedDate!);
+        _toselectedDate = picked; // Update the state with the selected date
+        _todateController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the controller
       });
-      to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!);
 
-      print(to_date);
-      "Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}";
+      to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!); // Update the to_date variable
+
+      print("Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}"); // Log the selected date
     }
+  }
+  String capitalize(String input) {
+    if (input.isEmpty) return input;
+    return input[0].toUpperCase() + input.substring(1).toLowerCase();
   }
 
   @override
@@ -301,7 +436,7 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
                     onPressed: () {
                       showModalBottomSheet(
                         context: context,
-                        isScrollControlled: true,
+                       isScrollControlled: true,
                         builder: (context) {
                           return FractionallySizedBox(
                             heightFactor: 0.88,
@@ -309,791 +444,788 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
                               padding: const EdgeInsets.all(10.0),
                               child: StatefulBuilder(
                                 builder: (BuildContext context, setModalState) {
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Center(
-                                        child: Container(
-                                          height: 4,
-                                          width: 60,
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFF98A2B3),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                        ),
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 20.0),
-                                            child: Text(
-                                              'Reqularize Attendance',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w400,
-                                                color: Color(0xFF004AAD),
-                                                fontFamily: 'Poppins',
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Row(
-                                        children: [
-                                          Flexible(
-                                            child: Padding(
-                                              padding: EdgeInsets.all(5.0),
-                                              child: Divider(
-                                                indent: 4,
-                                                endIndent: 4,
-                                                color: Colors.black12,
-                                                thickness: 0.4,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Form(
-                                        key: _regularizeformkey,
-                                        child: Row(
-                                          children: [],
-                                        ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 8.0),
-                                            child: const Text(
-                                              'Employee',
-                                              style: TextStyle(
-                                                fontFamily: 'Poppins',
-                                                fontSize: 14,
-                                                color: Color(0xFF667085),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: 10,
-                                          ),
-                                          Container(
-                                            height: 50,
-                                            width: 361,
-                                            decoration: BoxDecoration(
-                                              borderRadius:
-                                              BorderRadius.circular(8),
-                                              border: Border.all(
-                                                  color: Color(0xFFE9E9E9)),
-                                            ),
-                                            child: Padding(
-                                              padding: const EdgeInsets
-                                                  .symmetric(
-                                                  horizontal: 10.0),
-                                              child: DropdownButton<String>(
-                                                focusColor:
-                                                Colors.transparent,
-                                                isExpanded: true,
-                                                underline:
-                                                SizedBox(), // Removes underline
-                                                icon: Icon(
-                                                  Icons.keyboard_arrow_down,
-                                                  color: Color(0xFF667085),
-                                                ),
-                                                iconSize: 22,
-                                                value:
-                                                modalSelected, // Ensure modalSelectedItem matches one of the values in leavetype
-                                                style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 14.0),
-                                                borderRadius:
-                                                BorderRadius.circular(
-                                                    4),
-                                                items: membervalue.map((r) {
-                                                  return DropdownMenuItem<
-                                                      String>(
-                                                    value: r
-                                                        .id, // Use ID as the value
-                                                    child: Padding(
-                                                      padding:
-                                                      const EdgeInsets
-                                                          .symmetric(
-                                                          vertical:
-                                                          8.0),
-                                                      child: Text(
-                                                        r.name, // Display the name in the dropdown
-                                                        style: TextStyle(
-                                                            fontSize: 14.0,
-                                                            color: Colors
-                                                                .black),
-                                                      ),
-                                                    ),
-                                                  );
-                                                }).toList(),
-                                                onChanged: (String? value) {
-                                                  setModalState(() {
-                                                    modalSelected =
-                                                        value; // Update the selected ID
-                                                    print(
-                                                        "Selected ID: $modalSelected"); // Debugging
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                          Row(
-                                            children: [
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      'From Date',
-                                                      style: TextStyle(
-                                                          color: Color(0xFF667085)),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 75,
-                                                    width: 160,
-                                                    child: TextFormField(
-                                                      controller:
-                                                          _fromdateController,
-                                                      readOnly: true,
-                                                      decoration: InputDecoration(
-                                                        floatingLabelStyle:
-                                                            const TextStyle(
-                                                          color: Color(0xFFC5C5C5),
-                                                          fontFamily: 'Poppins',
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                        ),
-                                                        labelStyle: const TextStyle(
-                                                          color: Color(
-                                                              0xFFC5C5C5), // Default label color
-                                                        ),
-                                                        contentPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          vertical:
-                                                              10.0, // Adjust vertical padding for height
-                                                          horizontal:
-                                                              10.0, // Adjust horizontal padding
-                                                        ),
-                                                        suffixIcon: IconButton(
-                                                          icon: Icon(
-                                                            Icons
-                                                                .calendar_month_outlined,
-                                                            color: Color(
-                                                                0xFF004AAD), // Example color for the icon
-                                                          ),
-                                                          onPressed: () {
-                                                            _fromselectDate(
-                                                                context); // Call the date picker function
-                                                          },
-                                                        ),
-                                                        errorStyle: const TextStyle(
-                                                          fontSize: 12,
-                                                          fontFamily: 'Poppins',
-                                                          color: Color(0xFFDC897C),
-                                                        ),
-
-                                                        // Borders
-                                                        enabledBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFE9E9E9), // Border color when enabled
-                                                            width:
-                                                                1, // Adjust the border width as needed
-                                                          ),
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFE9E9E9), // Border color when focused
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        errorBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFDC897C), // Border color when error occurs
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        focusedErrorBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFDC897C), // Border color when error occurs and focused
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                              SizedBox(
-                                                width: 20,
-                                              ),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(8.0),
-                                                    child: Text(
-                                                      'To Date',
-                                                      style: TextStyle(
-                                                          color: Color(0xFF667085)),
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 75,
-                                                    width: 160,
-                                                    child: TextFormField(
-                                                      controller: _todateController,
-                                                      readOnly: true,
-                                                      decoration: InputDecoration(
-                                                        floatingLabelStyle:
-                                                            const TextStyle(
-                                                          color: Color(0xFFC5C5C5),
-                                                          fontFamily: 'Poppins',
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                        ),
-                                                        labelStyle: const TextStyle(
-                                                          color: Color(
-                                                              0xFFC5C5C5), // Default label color
-                                                        ),
-                                                        contentPadding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          vertical:
-                                                              10.0, // Adjust vertical padding for height
-                                                          horizontal:
-                                                              10.0, // Adjust horizontal padding
-                                                        ),
-                                                        suffixIcon: IconButton(
-                                                          icon: Icon(
-                                                            Icons
-                                                                .calendar_month_outlined,
-                                                            color: Color(
-                                                                0xFF004AAD), // Example color for the icon
-                                                          ),
-                                                          onPressed: () {
-                                                            _toselectDate(
-                                                                context); // Call the date picker function
-                                                          },
-                                                        ),
-                                                        errorStyle: const TextStyle(
-                                                          fontSize: 12,
-                                                          fontFamily: 'Poppins',
-                                                          color: Color(0xFFDC897C),
-                                                        ),
-
-                                                        // Borders
-                                                        enabledBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFE9E9E9), // Border color when enabled
-                                                            width:
-                                                                1, // Adjust the border width as needed
-                                                          ),
-                                                        ),
-                                                        focusedBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFE9E9E9), // Border color when focused
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        errorBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFDC897C), // Border color when error occurs
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                        focusedErrorBorder:
-                                                            OutlineInputBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                  4),
-                                                          borderSide:
-                                                              const BorderSide(
-                                                            color: Color(
-                                                                0xFFDC897C), // Border color when error occurs and focused
-                                                            width: 1,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  )
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'check-in',
-                                                  style: TextStyle(
-                                                      color: Color(0xFF667085)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 75,
-                                                width: 160,
-                                                child: TextFormField(
-                                                  readOnly: true,
-                                                  controller: _checkin,
-                                                  decoration: InputDecoration(
-                                                    floatingLabelStyle:
-                                                        const TextStyle(
-                                                      color: Color(0xFFC5C5C5),
-                                                      fontFamily: 'Poppins',
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                    ),
-                                                    labelStyle: const TextStyle(
-                                                      color: Color(
-                                                          0xFFC5C5C5), // Default label color
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                      vertical:
-                                                          10.0, // Adjust vertical padding for height
-                                                      horizontal:
-                                                          10.0, // Adjust horizontal padding
-                                                    ),
-                                                    suffixIcon: IconButton(
-                                                      icon: Icon(
-                                                        Icons
-                                                            .watch_later_outlined,
-                                                        color: Color(
-                                                            0xFF004AAD), // Example color for the icon
-                                                      ),
-                                                      onPressed: () {
-                                                        _checkInTime(
-                                                            context); // Call the date picker function
-                                                      },
-                                                    ),
-                                                    errorStyle: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: 'Poppins',
-                                                      color: Color(0xFFDC897C),
-                                                    ),
-
-                                                    // Borders
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when enabled
-                                                        width:
-                                                            1, // Adjust the border width as needed
-                                                      ),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    errorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    focusedErrorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs and focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                          SizedBox(
-                                            width: 20,
-                                          ),
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.all(8.0),
-                                                child: Text(
-                                                  'Check-out',
-                                                  style: TextStyle(
-                                                      color: Color(0xFF667085)),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                height: 75,
-                                                width: 160,
-                                                child: TextFormField(
-                                                  readOnly: true,
-                                                  controller: _checkout,
-                                                  decoration: InputDecoration(
-                                                    floatingLabelStyle:
-                                                        const TextStyle(
-                                                      color: Color(0xFFC5C5C5),
-                                                      fontFamily: 'Poppins',
-                                                      fontSize: 14,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                    ),
-                                                    labelStyle: const TextStyle(
-                                                      color: Color(
-                                                          0xFFC5C5C5), // Default label color
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                      vertical:
-                                                          10.0, // Adjust vertical padding for height
-                                                      horizontal:
-                                                          10.0, // Adjust horizontal padding
-                                                    ),
-                                                    suffixIcon: IconButton(
-                                                      icon: Icon(
-                                                        Icons
-                                                            .watch_later_outlined,
-                                                        color: Color(
-                                                            0xFF004AAD), // Example color for the icon
-                                                      ),
-                                                      onPressed: () {
-                                                        _checkOutTime(
-                                                            context); // Call the date picker function
-                                                      },
-                                                    ),
-                                                    errorStyle: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontFamily: 'Poppins',
-                                                      color: Color(0xFFDC897C),
-                                                    ),
-
-                                                    // Borders
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when enabled
-                                                        width:
-                                                            1, // Adjust the border width as needed
-                                                      ),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFE9E9E9), // Border color when focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    errorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                    focusedErrorBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Color(
-                                                            0xFFDC897C), // Border color when error occurs and focused
-                                                        width: 1,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Comments',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xFF667085)),
-                                          ),
-                                          SizedBox(
+                                  return SingleChildScrollView(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Center(
+                                          child: Container(
                                             height: 4,
-                                          ),
-                                          Container(
-                                            height: 100.0, // Set desired height
-                                            width: 361.0, // Set desired width
+                                            width: 60,
                                             decoration: BoxDecoration(
+                                              color: Color(0xFF98A2B3),
                                               borderRadius:
-                                                  BorderRadius.circular(8.0),
-                                              border: Border.all(
-                                                  color: Color(0xFFE9E9E9)),
-                                            ),
-                                            child: TextFormField(
-                                              controller: _comments,
-                                              decoration: InputDecoration(
-                                                contentPadding:
-                                                    EdgeInsets.symmetric(
-                                                        horizontal: 16.0,
-                                                        vertical: 8.0),
-                                                border: InputBorder
-                                                    .none, // Removes default border
-                                              ),
-                                              maxLines:
-                                                  null, // Allows multiple lines of text
-                                              style: TextStyle(fontSize: 16.0),
+                                                  BorderRadius.circular(8),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                      SizedBox(
-                                        height: 10,
-                                      ),
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 20.0),
-                                        child: Row(
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
                                           children: [
-                                            ConstrainedBox(
-                                              constraints:
-                                                  BoxConstraints.tightFor(
-                                                      width: 151, height: 42),
-                                              child: ElevatedButton.icon(
-                                                  onPressed: () {},
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Color(0xFFE4E7EC),
-                                                    elevation: .1,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4.0),
-                                                    ),
-                                                  ),
-                                                  label: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Center(
-                                                          child: InkWell(
-                                                        child: Text(
-                                                          "Cancel",
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Poppins',
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              color: Color(
-                                                                  0xFF030303)),
-                                                        ),
-                                                        onTap: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                      )),
-                                                    ],
-                                                  )),
-                                            ),
-                                            SizedBox(
-                                              width: 10,
-                                            ),
-                                            ConstrainedBox(
-                                              constraints:
-                                                  BoxConstraints.tightFor(
-                                                      width: 151, height: 42),
-                                              child: ElevatedButton.icon(
-                                                  onPressed: () {
-                                                    if (_regularizeformkey
-                                                        .currentState!
-                                                        .validate()) {
-                                                      _regularizeformkey
-                                                          .currentState
-                                                          ?.save();
-                                                      _regularizeModel.checkin =
-                                                          _fromdateController
-                                                              .text;
-                                                      _regularizeModel
-                                                              .checkout =
-                                                          _todateController
-                                                              .text;
-                                                      _regularizeModel
-                                                              .checkintime =
-                                                          _checkin.text + ":00";
-                                                      _regularizeModel
-                                                              .checkouttime =
-                                                          _checkout.text +
-                                                              ":00";
-                                                      _regularizeModel
-                                                              .comments =
-                                                          _comments.text;
-                                                      print(_regularizeModel
-                                                          .checkin);
-                                                      print(_regularizeModel
-                                                          .checkout);
-                                                      print(_regularizeModel
-                                                          .checkintime);
-                                                      print(_regularizeModel
-                                                          .checkouttime);
-                                                      _con?.applymanual(
-                                                          _regularizeModel,context);
-                                                      _regularizeformkey.currentState?.reset();
-
-                                                    }
-                                                  },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                    backgroundColor:
-                                                        Color(0xFF004AAD),
-                                                    elevation: .1,
-                                                    shape:
-                                                        RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              4.0),
-                                                    ),
-                                                  ),
-                                                  label: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Center(
-                                                          child: InkWell(
-                                                        child: const Text(
-                                                          "Apply",
-                                                          style: TextStyle(
-                                                              fontFamily:
-                                                                  'Poppins',
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              color:
-                                                                  Colors.white),
-                                                        ),
-                                                      )),
-                                                    ],
-                                                  )),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 20.0),
+                                              child: Text(
+                                                'Reqularize Attendance',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Color(0xFF004AAD),
+                                                  fontFamily: 'Poppins',
+                                                ),
+                                              ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Flexible(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(5.0),
+                                                child: Divider(
+                                                  indent: 4,
+                                                  endIndent: 4,
+                                                  color: Colors.black12,
+                                                  thickness: 0.4,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Form(
+                                          key: _regularizeformkey,
+                                          child: Row(
+                                            children: [],
+                                          ),
+                                        ),
+                                        Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 8.0),
+                                              child: const Text(
+                                                'Employee',
+                                                style: TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontSize: 14,
+                                                  color: Color(0xFF667085),
+                                                ),
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              height: 10,
+                                            ),
+                                            Container(
+                                              height: 50,
+                                              width: 361,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                BorderRadius.circular(8),
+                                                border: Border.all(
+                                                    color: Color(0xFFE9E9E9)),
+                                              ),
+                                              child: Padding(
+                                                padding: const EdgeInsets
+                                                    .symmetric(
+                                                    horizontal: 10.0),
+                                                child: DropdownButton<String>(
+                                                  focusColor:
+                                                  Colors.transparent,
+                                                  isExpanded: true,
+                                                  underline:
+                                                  SizedBox(), // Removes underline
+                                                  icon: Icon(
+                                                    Icons.keyboard_arrow_down,
+                                                    color: Color(0xFF667085),
+                                                  ),
+                                                  iconSize: 22,
+                                                  value:
+                                                  modalSelected, // Ensure modalSelectedItem matches one of the values in leavetype
+                                                  style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontSize: 14.0),
+                                                  borderRadius:
+                                                  BorderRadius.circular(
+                                                      4),
+                                                  items: membervalue.map((r) {
+                                                    return DropdownMenuItem<
+                                                        String>(
+                                                      value: r
+                                                          .id, // Use ID as the value
+                                                      child: Padding(
+                                                        padding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            vertical:
+                                                            8.0),
+                                                        child: Text(
+                                                          r.name, // Display the name in the dropdown
+                                                          style: TextStyle(
+                                                              fontSize: 14.0,
+                                                              color: Colors
+                                                                  .black),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                  onChanged: (String? value) {
+                                                    setModalState(() {
+                                                      modalSelected =
+                                                          value; // Update the selected ID
+                                                      print(
+                                                          "Selected ID: $modalSelected"); // Debugging
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                            ),
+                                            Row(
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(8.0),
+                                                      child: Text(
+                                                        'From Date',
+                                                        style: TextStyle(
+                                                            color: Color(0xFF667085)),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 75,
+                                                      width: 160,
+                                                      child: TextFormField(
+                                                        controller:
+                                                            _fromdateController,
+                                                        readOnly: true,
+                                                        decoration: InputDecoration(
+                                                          floatingLabelStyle:
+                                                              const TextStyle(
+                                                            color: Color(0xFFC5C5C5),
+                                                            fontFamily: 'Poppins',
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                          ),
+                                                          labelStyle: const TextStyle(
+                                                            color: Color(
+                                                                0xFFC5C5C5), // Default label color
+                                                          ),
+                                                          contentPadding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            vertical:
+                                                                10.0, // Adjust vertical padding for height
+                                                            horizontal:
+                                                                10.0, // Adjust horizontal padding
+                                                          ),
+                                                          suffixIcon: IconButton(
+                                                            icon: Icon(
+                                                              Icons
+                                                                  .calendar_month_outlined,
+                                                              color: Color(
+                                                                  0xFF004AAD), // Example color for the icon
+                                                            ),
+                                                            onPressed: () {
+                                                              _fromselectDate(
+                                                                  context); // Call the date picker function
+                                                            },
+                                                          ),
+                                                          errorStyle: const TextStyle(
+                                                            fontSize: 12,
+                                                            fontFamily: 'Poppins',
+                                                            color: Color(0xFFDC897C),
+                                                          ),
+
+                                                          // Borders
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFE9E9E9), // Border color when enabled
+                                                              width:
+                                                                  1, // Adjust the border width as needed
+                                                            ),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFE9E9E9), // Border color when focused
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                          errorBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFDC897C), // Border color when error occurs
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                          focusedErrorBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFDC897C), // Border color when error occurs and focused
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  width: 20,
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(8.0),
+                                                      child: Text(
+                                                        'To Date',
+                                                        style: TextStyle(
+                                                            color: Color(0xFF667085)),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      height: 75,
+                                                      width: 160,
+                                                      child: TextFormField(
+                                                        controller: _todateController,
+                                                        readOnly: true,
+                                                        decoration: InputDecoration(
+                                                          floatingLabelStyle:
+                                                              const TextStyle(
+                                                            color: Color(0xFFC5C5C5),
+                                                            fontFamily: 'Poppins',
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.w400,
+                                                          ),
+                                                          labelStyle: const TextStyle(
+                                                            color: Color(
+                                                                0xFFC5C5C5), // Default label color
+                                                          ),
+                                                          contentPadding:
+                                                              const EdgeInsets
+                                                                  .symmetric(
+                                                            vertical:
+                                                                10.0, // Adjust vertical padding for height
+                                                            horizontal:
+                                                                10.0, // Adjust horizontal padding
+                                                          ),
+                                                          suffixIcon: IconButton(
+                                                            icon: Icon(
+                                                              Icons
+                                                                  .calendar_month_outlined,
+                                                              color: Color(
+                                                                  0xFF004AAD), // Example color for the icon
+                                                            ),
+                                                            onPressed: () {
+                                                              _toselectDate(
+                                                                  context); // Call the date picker function
+                                                            },
+                                                          ),
+                                                          errorStyle: const TextStyle(
+                                                            fontSize: 12,
+                                                            fontFamily: 'Poppins',
+                                                            color: Color(0xFFDC897C),
+                                                          ),
+
+                                                          // Borders
+                                                          enabledBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFE9E9E9), // Border color when enabled
+                                                              width:
+                                                                  1, // Adjust the border width as needed
+                                                            ),
+                                                          ),
+                                                          focusedBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFE9E9E9), // Border color when focused
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                          errorBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFDC897C), // Border color when error occurs
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                          focusedErrorBorder:
+                                                              OutlineInputBorder(
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                    4),
+                                                            borderSide:
+                                                                const BorderSide(
+                                                              color: Color(
+                                                                  0xFFDC897C), // Border color when error occurs and focused
+                                                              width: 1,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        Row(
+                                          children: [
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                    'check-in',
+                                                    style: TextStyle(
+                                                        color: Color(0xFF667085)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 75,
+                                                  width: 160,
+                                                  child: TextFormField(
+                                                    readOnly: true,
+                                                    controller: _checkin,
+                                                    decoration: InputDecoration(
+                                                      floatingLabelStyle:
+                                                          const TextStyle(
+                                                        color: Color(0xFFC5C5C5),
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                      ),
+                                                      labelStyle: const TextStyle(
+                                                        color: Color(
+                                                            0xFFC5C5C5), // Default label color
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                        vertical:
+                                                            10.0, // Adjust vertical padding for height
+                                                        horizontal:
+                                                            10.0, // Adjust horizontal padding
+                                                      ),
+                                                      suffixIcon: IconButton(
+                                                        icon: Icon(
+                                                          Icons
+                                                              .watch_later_outlined,
+                                                          color: Color(
+                                                              0xFF004AAD), // Example color for the icon
+                                                        ),
+                                                        onPressed: () {
+                                                          _checkInTime(context); // Call the date picker function
+                                                        },
+                                                      ),
+                                                      errorStyle: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontFamily: 'Poppins',
+                                                        color: Color(0xFFDC897C),
+                                                      ),
+
+                                                      // Borders
+                                                      enabledBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFE9E9E9), // Border color when enabled
+                                                          width:
+                                                              1, // Adjust the border width as needed
+                                                        ),
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFE9E9E9), // Border color when focused
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                      errorBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFDC897C), // Border color when error occurs
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                      focusedErrorBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFDC897C), // Border color when error occurs and focused
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                            SizedBox(
+                                              width: 20,
+                                            ),
+                                            Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                    'Check-out',
+                                                    style: TextStyle(
+                                                        color: Color(0xFF667085)),
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  height: 75,
+                                                  width: 160,
+                                                  child: TextFormField(
+                                                    readOnly: true,
+                                                    controller: _checkout,
+                                                    decoration: InputDecoration(
+                                                      floatingLabelStyle:
+                                                          const TextStyle(
+                                                        color: Color(0xFFC5C5C5),
+                                                        fontFamily: 'Poppins',
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w400,
+                                                      ),
+                                                      labelStyle: const TextStyle(
+                                                        color: Color(
+                                                            0xFFC5C5C5), // Default label color
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                        vertical:
+                                                            10.0, // Adjust vertical padding for height
+                                                        horizontal:
+                                                            10.0, // Adjust horizontal padding
+                                                      ),
+                                                      suffixIcon: IconButton(
+                                                        icon: Icon(
+                                                          Icons
+                                                              .watch_later_outlined,
+                                                          color: Color(
+                                                              0xFF004AAD), // Example color for the icon
+                                                        ),
+                                                        onPressed: () {
+                                                          _checkOutTime(
+                                                              context); // Call the date picker function
+                                                        },
+                                                      ),
+                                                      errorStyle: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontFamily: 'Poppins',
+                                                        color: Color(0xFFDC897C),
+                                                      ),
+
+                                                      // Borders
+                                                      enabledBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFE9E9E9), // Border color when enabled
+                                                          width:
+                                                              1, // Adjust the border width as needed
+                                                        ),
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFE9E9E9), // Border color when focused
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                      errorBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFDC897C), // Border color when error occurs
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                      focusedErrorBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Color(
+                                                              0xFFDC897C), // Border color when error occurs and focused
+                                                          width: 1,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Comments',
+                                              style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: Color(0xFF667085)),
+                                            ),
+                                            SizedBox(
+                                              height: 4,
+                                            ),
+                                            Container(
+                                              height: 100.0, // Set desired height
+                                              width: 361.0, // Set desired width
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                                border: Border.all(
+                                                    color: Color(0xFFE9E9E9)),
+                                              ),
+                                              child: TextFormField(
+                                                controller: _comments,
+                                                decoration: InputDecoration(
+                                                  contentPadding:
+                                                      EdgeInsets.symmetric(
+                                                          horizontal: 16.0,
+                                                          vertical: 8.0),
+                                                  border: InputBorder
+                                                      .none, // Removes default border
+                                                ),
+                                                maxLines:
+                                                    null, // Allows multiple lines of text
+                                                style: TextStyle(fontSize: 16.0),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(
+                                          height: 10,
+                                        ),
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 20.0),
+                                          child: Row(
+                                            children: [
+                                              ConstrainedBox(
+                                                constraints:
+                                                    BoxConstraints.tightFor(
+                                                        width: 151, height: 42),
+                                                child: ElevatedButton.icon(
+                                                    onPressed: () {},
+                                                    style:
+                                                        ElevatedButton.styleFrom(
+                                                      backgroundColor:
+                                                          Color(0xFFE4E7EC),
+                                                      elevation: .1,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4.0),
+                                                      ),
+                                                    ),
+                                                    label: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Center(
+                                                            child: InkWell(
+                                                          child: Text(
+                                                            "Cancel",
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Poppins',
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                color: Color(
+                                                                    0xFF030303)),
+                                                          ),
+                                                          onTap: () {
+                                                            Navigator.pop(
+                                                                context);
+                                                          },
+                                                        )),
+                                                      ],
+                                                    )),
+                                              ),
+                                              SizedBox(
+                                                width: 10,
+                                              ),
+                                              ConstrainedBox(
+                                                constraints:
+                                                    BoxConstraints.tightFor(
+                                                        width: 151, height: 42),
+                                                child: ElevatedButton.icon(
+                                                    onPressed: () {
+                                                      if (_regularizeformkey
+                                                          .currentState!
+                                                          .validate()) {
+                                                        _regularizeformkey
+                                                            .currentState
+                                                            ?.save();
+                                                        _regularizeModel.checkin =
+                                                            _fromdateController
+                                                                .text;
+                                                        _regularizeModel
+                                                                .checkout =
+                                                            _todateController
+                                                                .text;
+                                                        _regularizeModel
+                                                                .checkintime = _convertTo24HourFormat1 (_checkin.text);
+                                                        _regularizeModel
+                                                                .checkouttime =  _convertTo24HourFormat1(_checkout.text);
+                                                        _regularizeModel
+                                                                .comments =
+                                                            _comments.text;
+                                                        print(_regularizeModel
+                                                            .checkin);
+                                                        print(_regularizeModel
+                                                            .checkout);
+                                                        print(_regularizeModel
+                                                            .checkintime);
+                                                        print(_regularizeModel
+                                                            .checkouttime);
+                                                        _con?.applymanual(
+                                                            _regularizeModel,context);
+                                                        _regularizeformkey.currentState?.reset();
+
+                                                      }
+                                                    },
+                                                    style:
+                                                        ElevatedButton.styleFrom(
+                                                      backgroundColor:
+                                                          Color(0xFF004AAD),
+                                                      elevation: .1,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                4.0),
+                                                      ),
+                                                    ),
+                                                    label: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Center(
+                                                            child: InkWell(
+                                                          child: const Text(
+                                                            "Apply",
+                                                            style: TextStyle(
+                                                                fontFamily:
+                                                                    'Poppins',
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                color:
+                                                                    Colors.white),
+                                                          ),
+                                                        )),
+                                                      ],
+                                                    )),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   );
                                 },
                               ),
@@ -1833,935 +1965,939 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
                     ),
                   ),
           ),
-          body: Column(
-            children: [
-              // Search and Filter Row
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  children: [
-                    // Search Container
-                    Container(
-                      height: 45,
-                      width: 295,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black12),
-                        color: Color(0xFFFCFCFC),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        children: const [
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Row(
-                              children: [
-                                Icon(Icons.search,
-                                    color: Color(0xFF98A2B3), size: 20),
-                                SizedBox(width: 2),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 8.0),
-                                  child: Text(
-                                    'Search',
-                                    style: TextStyle(
-                                      color: Color(0xFF98A2B3),
-                                      fontSize: 12,
-                                      fontFamily: 'Poppins',
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+          body: RefreshIndicator(
+            onRefresh:  _con!.fetchResponse,
+            child: Column(
+              children: [
+                // Search and Filter Row
+                // Padding(
+                //   padding: const EdgeInsets.all(10.0),
+                //   child: Row(
+                //     children: [
+                //       // Search Container
+                //       Container(
+                //         height: 45,
+                //         width: 295,
+                //         decoration: BoxDecoration(
+                //           border: Border.all(color: Colors.black12),
+                //           color: Color(0xFFFCFCFC),
+                //           borderRadius: BorderRadius.circular(4),
+                //         ),
+                //         child: Row(
+                //           children: const [
+                //             Padding(
+                //               padding: EdgeInsets.all(8.0),
+                //               child: Row(
+                //                 children: [
+                //                   Icon(Icons.search,
+                //                       color: Color(0xFF98A2B3), size: 20),
+                //                   SizedBox(width: 2),
+                //                   Padding(
+                //                     padding: EdgeInsets.only(left: 8.0),
+                //                     child: Text(
+                //                       'Search',
+                //                       style: TextStyle(
+                //                         color: Color(0xFF98A2B3),
+                //                         fontSize: 12,
+                //                         fontFamily: 'Poppins',
+                //                       ),
+                //                     ),
+                //                   ),
+                //                 ],
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ),
+                //       const SizedBox(width: 10),
+                //       // Filter Button
+                //       Container(
+                //         height: 40,
+                //         width: 35,
+                //         decoration: BoxDecoration(
+                //           border: Border.all(color: Colors.black12),
+                //           borderRadius: BorderRadius.circular(4),
+                //         ),
+                //         child: Image.asset('assets/images/filter.png'),
+                //       ),
+                //     ],
+                //   ),
+                // ),
+                // Tabs and TabBarView
+                DefaultTabController(
+                  length: 3,
+                  child: Expanded(
+                    child: Column(
+                      children: [
+                        ButtonsTabBar(
+                          radius: 12,
+                          labelSpacing: 12,
+                          backgroundColor: const Color(0xFFE0EDFF),
+                          unselectedBackgroundColor: Colors.transparent,
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 32),
+                          unselectedBorderColor: Colors.transparent,
+                          unselectedLabelStyle: const TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            color: Color(0xFF98A2B3),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Filter Button
-                    Container(
-                      height: 40,
-                      width: 35,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.black12),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Image.asset('assets/images/filter.png'),
-                    ),
-                  ],
-                ),
-              ),
-              // Tabs and TabBarView
-              DefaultTabController(
-                length: 3,
-                child: Expanded(
-                  child: Column(
-                    children: [
-                      ButtonsTabBar(
-                        radius: 12,
-                        labelSpacing: 12,
-                        backgroundColor: const Color(0xFFE0EDFF),
-                        unselectedBackgroundColor: Colors.transparent,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 32),
-                        unselectedBorderColor: Colors.transparent,
-                        unselectedLabelStyle: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                          color: Color(0xFF98A2B3),
+                          labelStyle: const TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 14,
+                            color: Color(0xFF030303),
+                          ),
+                          tabs: const [
+                            Tab(text: 'All'),
+                            Tab(text: 'Manual'),
+                            Tab(text: 'Others'),
+                          ],
                         ),
-                        labelStyle: const TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 14,
-                          color: Color(0xFF030303),
-                        ),
-                        tabs: const [
-                          Tab(text: 'All'),
-                          Tab(text: 'Manual'),
-                          Tab(text: 'Others'),
-                        ],
-                      ),
-                      Expanded(
-                        child: TabBarView(
-                          children: [
-                            _con!.isLoading ?
-                            ListView.builder(
-                              itemCount:4,
-                              itemBuilder: (BuildContext context, int index) {
-                                return const AttendanceShimmer();
-                              },
-                            )
-                                : _con!.attendancelist.isEmpty? Container(
-                              child: Center(
-                                child: SvgPicture.asset(
-                                  'assets/images/norecord.svg',
-                                ),
-                              ),
-                            ):
-                            ListView.builder(
-                              controller: scrollController,
-                              itemCount: _con?.attendancelist.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                var attendance = _con?.attendancelist[index];
-                                print(attendance?.checkintime);
-                                return SingleChildScrollView(
-                                  child:
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                        Expanded(
+                          child: TabBarView(
+                            children: [
+                              _con!.isLoading ?
+                              ListView.builder(
+                                itemCount:4,
+                                itemBuilder: (BuildContext context, int index) {
+                                  return const AttendanceShimmer();
+                                },
+                              )
+                                  : _con!.attendancelist.isEmpty? Container(
+                                child:
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center, // Centers the column vertically
                                     children: [
-                                      InkWell(
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 10.0, left: 10, right: 10),
-                                          child: Stack(children: [
-                                            Positioned(
-                                              top: 17,
-                                              right: -17,
-                                              child: Container(
-                                                height: 100,
-                                                width: 100,
-                                                child: Image.asset(
-                                                  'assets/images/biometric.png',
-                                                  fit: BoxFit.contain,
-                                                  color: Color(0xFFE0EDFF),
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              height: 141,
-                                              width: 361,
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: Color(0xFFE4E7EC)),
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: Column(
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Row(
-                                                      children: [
-                                                        Center(
-                                                            child: Text(
-                                                          formatDate(attendance!
-                                                              .checkin),
-                                                          style: TextStyle(
-                                                              fontSize: 14,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              color: Color(
-                                                                  0xFF030303),
-                                                              fontFamily:
-                                                                  'Poppins'),
-                                                        )),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 7.0, left: 10),
-                                                    child: Row(
-                                                      children: [
-                                                        Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          children: [
-                                                            Center(
-                                                                child: Text(
-                                                              attendance
-                                                                  .checkinmedium,
-                                                              style: TextStyle(
-                                                                  fontSize: 12,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w400,
-                                                                  color: Color(
-                                                                      0xFF004AAD),
-                                                                  fontFamily:
-                                                                      'Poppins'),
-                                                            )),
-                                                          ],
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                  Row(
-                                                    children: [
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    top: 20.0,
-                                                                    left: 10),
-                                                            child: Row(
-                                                              children: [
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Center(
-                                                                        child:
-                                                                            Text(
-                                                                      'In & Out',
-                                                                      style: TextStyle(
-                                                                          color: Color(
-                                                                              0xFF98A2B3),
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontFamily:
-                                                                              'Poppins'),
-                                                                    ))
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    top: 10.0,
-                                                                    left: 10),
-                                                            child: Row(
-                                                              children: [
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Center(
-                                                                        child:
-                                                                            Text(
-                                                                      "${formatedTime(attendance.checkintime)} - ${attendance.checkouttime.isEmpty ? " " : formatedTime(attendance.checkouttime)}",
-                                                                      style: TextStyle(
-                                                                          color: Color(
-                                                                              0xFF030303),
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontFamily:
-                                                                              'Poppins'),
-                                                                    ))
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      SizedBox(
-                                                        width: 60,
-                                                      ),
-                                                      Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    top: 20.0,
-                                                                    left: 10),
-                                                            child: Row(
-                                                              children: [
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Center(
-                                                                        child:
-                                                                            Text(
-                                                                      'Total Hours',
-                                                                      style: TextStyle(
-                                                                          color: Color(
-                                                                              0xFF98A2B3),
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontFamily:
-                                                                              'Poppins'),
-                                                                    ))
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                    .only(
-                                                                    top: 10.0,
-                                                                    left: 10),
-                                                            child: Row(
-                                                              children: [
-                                                                Row(
-                                                                  mainAxisAlignment:
-                                                                      MainAxisAlignment
-                                                                          .center,
-                                                                  children: [
-                                                                    Center(
-                                                                        child:
-                                                                            Text(
-                                                                      attendance
-                                                                              .checkouttime
-                                                                              .isEmpty
-                                                                          ? "0"
-                                                                          : calculateTimeDifference(formatedTime(attendance.checkintime), formatedTime(attendance.checkouttime.isEmpty ? "00:00:00" : attendance.checkouttime)) +
-                                                                              " Hours ",
-                                                                      style: TextStyle(
-                                                                          color: Color(
-                                                                              0xFF030303),
-                                                                          fontSize:
-                                                                              12,
-                                                                          fontFamily:
-                                                                              'Poppins'),
-                                                                    ))
-                                                                  ],
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ]),
-                                        ),
+                                      SvgPicture.asset(
+                                        'assets/images/norecord.svg',
                                       ),
+                                      Text("No Record Found",style: TextStyle(fontFamily: 'Poppins',fontSize: 12),)
                                     ],
                                   ),
-                                );
-                              },
-                            ),
-                            ListView.builder(
-                              controller: scrollController,
-                              itemCount: _con?.attendancelist.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                var attendance = _con?.attendancelist[index];
-                                print(attendance?.checkintime);
-                                return attendance?.checkinmedium == 'manual'
-                                    ? SingleChildScrollView(
-
-                                        child:
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            InkWell(
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 10.0,
-                                                    left: 10,
-                                                    right: 10),
-                                                child: Stack(children: [
-                                                  Positioned(
-                                                    top: 17,
-                                                    right: -17,
-                                                    child: Container(
-                                                      height: 100,
-                                                      width: 100,
-                                                      child: Image.asset(
-                                                        'assets/images/biometric.png',
-                                                        fit: BoxFit.contain,
-                                                        color:
-                                                            Color(0xFFE0EDFF),
+                                )
+                              ):
+                              ListView.builder(
+                                controller: scrollController,
+                                itemCount: _con?.attendancelist.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var attendance = _con?.attendancelist[index];
+                                  print(attendance?.checkintime);
+                                  return SingleChildScrollView(
+                                    child:
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        InkWell(
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 10.0, left: 10, right: 10),
+                                            child: Stack(children: [
+                                              Positioned(
+                                                top: 17,
+                                                right: -17,
+                                                child: Container(
+                                                  height: 100,
+                                                  width: 100,
+                                                  child: Image.asset(
+                                                    'assets/images/biometric.png',
+                                                    fit: BoxFit.contain,
+                                                    color: Color(0xFFE0EDFF),
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                height: 141,
+                                                width: 361,
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(
+                                                      color: Color(0xFFE4E7EC)),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Column(
+                                                  children: [
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              8.0),
+                                                      child: Row(
+                                                        children: [
+                                                          Center(
+                                                              child: Text(
+                                                            formatDate(attendance!
+                                                                .checkin),
+                                                            style: TextStyle(
+                                                                fontSize: 14,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w400,
+                                                                color: Color(
+                                                                    0xFF030303),
+                                                                fontFamily:
+                                                                    'Poppins'),
+                                                          )),
+                                                        ],
                                                       ),
                                                     ),
-                                                  ),
-                                                  Container(
-                                                    height: 200,
-                                                    width: 361,
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Color(
-                                                              0xFFE4E7EC)),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                    child: Column(
-                                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                          const EdgeInsets
-                                                              .only(
-                                                              top: 15.0,
-                                                              left: 10),
-                                                          child: Row(
-                                                            children: [
-                                                              Row(
-                                                                mainAxisAlignment:
+                                                    Padding(
+                                                      padding:
+                                                          const EdgeInsets.only(
+                                                              top: 7.0, left: 10),
+                                                      child: Row(
+                                                        children: [
+                                                          Row(
+                                                            mainAxisAlignment:
                                                                 MainAxisAlignment
                                                                     .center,
-                                                                children: [
-                                                                  Center(
-                                                                      child:
-                                                                      Text(
-                                                                        attendance
-                                                                            !.checkinmedium,
-                                                                        style: TextStyle(
-                                                                            fontSize:
-                                                                            14,
-                                                                            fontWeight:
-                                                                            FontWeight
-                                                                                .w400,
-                                                                            color: Color(
-                                                                                0xFF004AAD),
-                                                                            fontFamily:
-                                                                            'Poppins'),
-                                                                      )),
-                                                                ],
-                                                              ),
-                                                              Spacer(),
-
-                                                              attendance.status == 'pending'?
-                                                              Row(mainAxisAlignment: MainAxisAlignment.end,
-                                                                children: [
-                                                                  Container(
-                                                                    decoration: BoxDecoration(
-                                                                        borderRadius: BorderRadius.circular(50),
-                                                                        border: Border.all(
-                                                                            color: Colors.black12
-                                                                        )),
-                                                                    child: Center(
-                                                                        child: InkWell(
-                                                                          child: Padding(
-                                                                            padding: const EdgeInsets.all(8.0),
-                                                                            child: Center(
-                                                                              child: Image.asset(
-                                                                                'assets/images/edit-2.png',
-                                                                                height: 20,
-                                                                                width: 20,
-                                                                                color:
-                                                                                Color(0xFF004AAD),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          onTap: () {
-                                                                            editmanualcheckin(attendance,attendance.id);
-
-                                                                          },
-                                                                        )),
-                                                                  ),
-                                                                  SizedBox(
-                                                                    width: 10,
-                                                                  ),
-                                                                  Container(
-                                                                    decoration: BoxDecoration(
-                                                                        borderRadius: BorderRadius.circular(50),
-                                                                        border: Border.all(
-                                                                            color: Colors.black12
-                                                                        )),
-                                                                    child: Center(
-                                                                        child: InkWell(
-                                                                          child: Padding(
-                                                                            padding: const EdgeInsets.all(8.0),
-                                                                            child: Center(
-                                                                              child: Image.asset(
-                                                                                'assets/images/trash.png',
-                                                                                height: 20,
-                                                                                width: 20,
-                                                                                color:
-                                                                                Color(0xFFEA7971),
-                                                                              ),
-                                                                            ),
-                                                                          ),
-                                                                          onTap: () {
-                                                                            deletemanual(attendance.id,context,attendance.userid);
-
-                                                                          },
-                                                                        )),
-                                                                  ),
-                                                                ],
-                                                              ) : Container(),
-                                                            ],
-                                                          ),
-                                                        ),
-
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Row(
                                                             children: [
                                                               Center(
-                                                                  child: Text(
-                                                                '${formatDate(attendance!.checkin)} -${formatDate(attendance!.checkout)}' ,
+                                                                  child: Text(capitalize(attendance.checkinmedium),
                                                                 style: TextStyle(
-                                                                    fontSize:
-                                                                        14,
+                                                                    fontSize: 12,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .w400,
                                                                     color: Color(
-                                                                        0xFF030303),
+                                                                        0xFF004AAD),
                                                                     fontFamily:
                                                                         'Poppins'),
                                                               )),
                                                             ],
                                                           ),
-                                                        ),
-
-                                                        Row(
+                                                        ],
+                                                      ),
+                                                    ),
+                                                    Row(
+                                                      children: [
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
                                                           children: [
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .only( top: 10,
-
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      top: 20.0,
                                                                       left: 10),
-                                                                  child: Row(
+                                                              child: Row(
+                                                                children: [
+                                                                  Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
                                                                     children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            'In & Out',
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF98A2B3),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
+                                                                      Center(
+                                                                          child:
+                                                                              Text(
+                                                                        'In & Out',
+                                                                        style: TextStyle(
+                                                                            color: Color(
+                                                                                0xFF98A2B3),
+                                                                            fontSize:
+                                                                                12,
+                                                                            fontFamily:
+                                                                                'Poppins'),
+                                                                      ))
                                                                     ],
                                                                   ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets
+                                                                ],
+                                                              ),
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
                                                                       .only(
                                                                       top: 10.0,
                                                                       left: 10),
-                                                                  child: Row(
+                                                              child: Row(
+                                                                children: [
+                                                                  Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
                                                                     children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            "${formatedTime(attendance.checkintime)} - ${attendance.checkouttime.isEmpty ? " " : formatedTime(attendance.checkouttime)}",
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF030303),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
+                                                                      Center(
+                                                                          child:
+                                                                              Text(
+                                                                        "${formatedTime(attendance.checkintime)} - ${attendance.checkouttime.isEmpty ? " " : formatedTime(attendance.checkouttime)}",
+                                                                        style: TextStyle(
+                                                                            color: Color(
+                                                                                0xFF030303),
+                                                                            fontSize:
+                                                                                12,
+                                                                            fontFamily:
+                                                                                'Poppins'),
+                                                                      ))
                                                                     ],
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            SizedBox(
-                                                              width: 60,
-                                                            ),
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .only(
-                                                                    top: 10,
-
-                                                                      left: 10),
-                                                                  child: Row(
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            'Total Hours',
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF98A2B3),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .only(
-                                                                      top: 10.0,
-                                                                      left: 10),
-                                                                  child: Row(
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            attendance.checkouttime.isEmpty
-                                                                                ? "0"
-                                                                                : calculateTimeDifference(formatedTime(attendance.checkintime), formatedTime(attendance.checkouttime.isEmpty ? "00:00:00" : attendance.checkouttime)) + " Hours ",
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF030303),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
                                                         SizedBox(
-                                                          height: 10,
+                                                          width: 60,
                                                         ),
-                                                        Padding(
-                                                          padding: const EdgeInsets.all(8.0),
-                                                          child: Container(
-                                                            height: 25,
-                                                            width: 120,
-                                                            decoration: BoxDecoration(
-                                                                color: attendance.status == 'approved' ||attendance.status == 'auto-approved' ?Color(0xFF65BD95):Color(0xFFF1BB5B),
-                                                                borderRadius:
-                                                                BorderRadius.circular(
-                                                                    4)),
-                                                            child: Center(
-                                                                child: Text(
-                                                                    attendance
-                                                                        .status,
-                                                                    style: TextStyle(
-                                                                        fontFamily:
-                                                                        'Poppins',
-                                                                        fontSize:
-                                                                        12,
-                                                                        fontWeight:
-                                                                        FontWeight.w400,
-                                                                        color: Colors.white))),
-                                                          ),
-                                                        ),
-
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ]),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      )
-                                    : Center(child: Container());
-                              },
-                            ),
-                            ListView.builder(
-                              itemCount: _con?.attendancelist.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                var attendance = _con?.attendancelist[index];
-                                print(attendance?.checkintime);
-                                return attendance?.checkinmedium != 'manual'
-                                    ? SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            InkWell(
-                                              child: Padding(
-                                                padding: const EdgeInsets.only(
-                                                    top: 10.0,
-                                                    left: 10,
-                                                    right: 10),
-                                                child: Stack(children: [
-                                                  Positioned(
-                                                    top: 17,
-                                                    right: -17,
-                                                    child: Container(
-                                                      height: 100,
-                                                      width: 100,
-                                                      child: Image.asset(
-                                                        'assets/images/biometric.png',
-                                                        fit: BoxFit.contain,
-                                                        color:
-                                                            Color(0xFFE0EDFF),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  Container(
-                                                    height: 141,
-                                                    width: 361,
-                                                    decoration: BoxDecoration(
-                                                      border: Border.all(
-                                                          color: Color(
-                                                              0xFFE4E7EC)),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              8),
-                                                    ),
-                                                    child: Column(
-                                                      children: [
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .all(8.0),
-                                                          child: Row(
-                                                            children: [
-                                                              Center(
-                                                                  child: Text(
-                                                                formatDate(
-                                                                    attendance!
-                                                                        .checkin),
-                                                                style: TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                    color: Color(
-                                                                        0xFF030303),
-                                                                    fontFamily:
-                                                                        'Poppins'),
-                                                              )),
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Padding(
-                                                          padding:
-                                                              const EdgeInsets
-                                                                  .only(
-                                                                  top: 7.0,
-                                                                  left: 10),
-                                                          child: Row(
-                                                            children: [
-                                                              Row(
-                                                                mainAxisAlignment:
-                                                                    MainAxisAlignment
-                                                                        .center,
+                                                        Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .only(
+                                                                      top: 20.0,
+                                                                      left: 10),
+                                                              child: Row(
                                                                 children: [
-                                                                  Center(
-                                                                      child:
-                                                                          Text(
-                                                                    attendance
-                                                                        .checkinmedium,
-                                                                    style: TextStyle(
-                                                                        fontSize:
-                                                                            12,
-                                                                        fontWeight:
-                                                                            FontWeight
-                                                                                .w400,
-                                                                        color: Color(
-                                                                            0xFF004AAD),
-                                                                        fontFamily:
-                                                                            'Poppins'),
-                                                                  )),
+                                                                  Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
+                                                                    children: [
+                                                                      Center(
+                                                                          child:
+                                                                              Text(
+                                                                        'Total Hours',
+                                                                        style: TextStyle(
+                                                                            color: Color(
+                                                                                0xFF98A2B3),
+                                                                            fontSize:
+                                                                                12,
+                                                                            fontFamily:
+                                                                                'Poppins'),
+                                                                      ))
+                                                                    ],
+                                                                  ),
                                                                 ],
                                                               ),
-
-                                                            ],
-                                                          ),
-                                                        ),
-                                                        Row(
-                                                          children: [
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .only(
-                                                                      top: 20.0,
-                                                                      left: 10),
-                                                                  child: Row(
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            'In & Out',
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF98A2B3),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets
+                                                            ),
+                                                            Padding(
+                                                              padding:
+                                                                  const EdgeInsets
                                                                       .only(
                                                                       top: 10.0,
                                                                       left: 10),
-                                                                  child: Row(
+                                                              child: Row(
+                                                                children: [
+                                                                  Row(
+                                                                    mainAxisAlignment:
+                                                                        MainAxisAlignment
+                                                                            .center,
                                                                     children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            "${formatedTime(attendance.checkintime)} - ${attendance.checkouttime.isEmpty ? " " : formatedTime(attendance.checkouttime)}",
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF030303),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
+                                                                      Center(
+                                                                          child:
+                                                                              Text(
+                                                                        attendance
+                                                                                .checkouttime
+                                                                                .isEmpty
+                                                                            ? "0"
+                                                                            : calculateTimeDifference(formatedTime(attendance.checkintime), formatedTime(attendance.checkouttime.isEmpty ? "00:00:00" : attendance.checkouttime)) +
+                                                                                " Hours ",
+                                                                        style: TextStyle(
+                                                                            color: Color(
+                                                                                0xFF030303),
+                                                                            fontSize:
+                                                                                12,
+                                                                            fontFamily:
+                                                                                'Poppins'),
+                                                                      ))
                                                                     ],
                                                                   ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                            SizedBox(
-                                                              width: 60,
-                                                            ),
-                                                            Column(
-                                                              crossAxisAlignment:
-                                                                  CrossAxisAlignment
-                                                                      .start,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .only(
-                                                                      top: 20.0,
-                                                                      left: 10),
-                                                                  child: Row(
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            'Total Hours',
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF98A2B3),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                                Padding(
-                                                                  padding: const EdgeInsets
-                                                                      .only(
-                                                                      top: 10.0,
-                                                                      left: 10),
-                                                                  child: Row(
-                                                                    children: [
-                                                                      Row(
-                                                                        mainAxisAlignment:
-                                                                            MainAxisAlignment.center,
-                                                                        children: [
-                                                                          Center(
-                                                                              child: Text(
-                                                                            attendance.checkouttime.isEmpty
-                                                                                ? "0"
-                                                                                : calculateTimeDifference(formatedTime(attendance.checkintime), formatedTime(attendance.checkouttime.isEmpty ? "00:00:00" : attendance.checkouttime)) + " Hours ",
-                                                                            style: TextStyle(
-                                                                                color: Color(0xFF030303),
-                                                                                fontSize: 12,
-                                                                                fontFamily: 'Poppins'),
-                                                                          ))
-                                                                        ],
-                                                                      ),
-                                                                    ],
-                                                                  ),
-                                                                ),
-                                                              ],
+                                                                ],
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
                                                       ],
                                                     ),
-                                                  ),
-                                                ]),
+                                                  ],
+                                                ),
                                               ),
-                                            ),
-                                          ],
+                                            ]),
+                                          ),
                                         ),
-                                      )
-                                    : Center(child: Container());
-                              },
-                            ),
-                          ],
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                              ListView.builder(
+                                controller: scrollController,
+                                itemCount: _con?.attendancelist.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var attendance = _con?.attendancelist[index];
+                                  print(attendance?.checkintime);
+                                  return attendance?.checkinmedium == 'manual'
+                                      ? SingleChildScrollView(
+
+                                          child:
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              InkWell(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(
+                                                      top: 10.0,
+                                                      left: 10,
+                                                      right: 10),
+                                                  child: Stack(children: [
+                                                    Positioned(
+                                                      top: 17,
+                                                      right: -17,
+                                                      child: Container(
+                                                        height: 100,
+                                                        width: 100,
+                                                        child: Image.asset(
+                                                          'assets/images/biometric.png',
+                                                          fit: BoxFit.contain,
+                                                          color:
+                                                              Color(0xFFE0EDFF),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      height: 200,
+                                                      width: 361,
+                                                      decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Color(
+                                                                0xFFE4E7EC)),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                8),
+                                                      ),
+                                                      child: Column(
+                                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                            const EdgeInsets
+                                                                .only(
+                                                                top: 15.0,
+                                                                left: 10),
+                                                            child: Row(
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .center,
+                                                                  children: [
+                                                                    Center(
+                                                                        child:
+                                                                        Text(capitalize(attendance!.checkinmedium),
+                                                                          style: TextStyle(
+                                                                              fontSize:
+                                                                              14,
+                                                                              fontWeight:
+                                                                              FontWeight
+                                                                                  .w400,
+                                                                              color: Color(
+                                                                                  0xFF004AAD),
+                                                                              fontFamily:
+                                                                              'Poppins'),
+                                                                        )),
+                                                                  ],
+                                                                ),
+                                                                Spacer(),
+
+                                                                attendance.status == 'pending'?
+                                                                Row(mainAxisAlignment: MainAxisAlignment.end,
+                                                                  children: [
+                                                                    Container(
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius: BorderRadius.circular(50),
+                                                                          border: Border.all(
+                                                                              color: Colors.black12
+                                                                          )),
+                                                                      child: Center(
+                                                                          child: InkWell(
+                                                                            child: Padding(
+                                                                              padding: const EdgeInsets.all(8.0),
+                                                                              child: Center(
+                                                                                child: Image.asset(
+                                                                                  'assets/images/edit-2.png',
+                                                                                  height: 20,
+                                                                                  width: 20,
+                                                                                  color:
+                                                                                  Color(0xFF004AAD),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            onTap: () {
+                                                                              editmanualcheckin(attendance,attendance.id);
+
+                                                                            },
+                                                                          )),
+                                                                    ),
+                                                                    SizedBox(
+                                                                      width: 10,
+                                                                    ),
+                                                                    Container(
+                                                                      decoration: BoxDecoration(
+                                                                          borderRadius: BorderRadius.circular(50),
+                                                                          border: Border.all(
+                                                                              color: Colors.black12
+                                                                          )),
+                                                                      child: Center(
+                                                                          child: InkWell(
+                                                                            child: Padding(
+                                                                              padding: const EdgeInsets.all(8.0),
+                                                                              child: Center(
+                                                                                child: Image.asset(
+                                                                                  'assets/images/trash.png',
+                                                                                  height: 20,
+                                                                                  width: 20,
+                                                                                  color:
+                                                                                  Color(0xFFEA7971),
+                                                                                ),
+                                                                              ),
+                                                                            ),
+                                                                            onTap: () {
+                                                                              deletemanual(attendance.id,context,attendance.userid);
+
+                                                                            },
+                                                                          )),
+                                                                    ),
+                                                                  ],
+                                                                ) : Container(),
+                                                              ],
+                                                            ),
+                                                          ),
+
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Center(
+                                                                    child: Text(
+                                                                  '${formatDate(attendance!.checkin)} -${formatDate(attendance!.checkout)}' ,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          14,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w400,
+                                                                      color: Color(
+                                                                          0xFF030303),
+                                                                      fontFamily:
+                                                                          'Poppins'),
+                                                                )),
+                                                              ],
+                                                            ),
+                                                          ),
+
+                                                          Row(
+                                                            children: [
+                                                              Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only( top: 10,
+
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              'In & Out',
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF98A2B3),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 10.0,
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              "${formatedTime(attendance.checkintime)} - ${attendance.checkouttime.isEmpty ? " " : formatedTime(attendance.checkouttime)}",
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF030303),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              SizedBox(
+                                                                width: 60,
+                                                              ),
+                                                              Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                      top: 10,
+
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              'Total Hours',
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF98A2B3),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 10.0,
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              attendance.checkouttime.isEmpty
+                                                                                  ? "0"
+                                                                                  : calculateTimeDifference(formatedTime(attendance.checkintime), formatedTime(attendance.checkouttime.isEmpty ? "00:00:00" : attendance.checkouttime)) + " Hours ",
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF030303),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          SizedBox(
+                                                            height: 10,
+                                                          ),
+                                                          Padding(
+                                                            padding: const EdgeInsets.all(8.0),
+                                                            child: Container(
+                                                              height: 25,
+                                                              width: 120,
+                                                              decoration: BoxDecoration(
+                                                                  color: attendance.status == 'approved' ||attendance.status == 'auto-approved' ?Color(0xFF65BD95):Color(0xFFF1BB5B),
+                                                                  borderRadius:
+                                                                  BorderRadius.circular(
+                                                                      4)),
+                                                              child: Center(
+                                                                  child: Text(
+                                                                      attendance
+                                                                          .status,
+                                                                      style: TextStyle(
+                                                                          fontFamily:
+                                                                          'Poppins',
+                                                                          fontSize:
+                                                                          12,
+                                                                          fontWeight:
+                                                                          FontWeight.w400,
+                                                                          color: Colors.white))),
+                                                            ),
+                                                          ),
+
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ]),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : Center(child: Container());
+                                },
+                              ),
+                              ListView.builder(
+                                itemCount: _con?.attendancelist.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  var attendance = _con?.attendancelist[index];
+                                  print(attendance?.checkintime);
+                                  return attendance?.checkinmedium != 'manual'
+                                      ? SingleChildScrollView(
+                                          controller: scrollController,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              InkWell(
+                                                child: Padding(
+                                                  padding: const EdgeInsets.only(
+                                                      top: 10.0,
+                                                      left: 10,
+                                                      right: 10),
+                                                  child: Stack(children: [
+                                                    Positioned(
+                                                      top: 17,
+                                                      right: -17,
+                                                      child: Container(
+                                                        height: 100,
+                                                        width: 100,
+                                                        child: Image.asset(
+                                                          'assets/images/biometric.png',
+                                                          fit: BoxFit.contain,
+                                                          color:
+                                                              Color(0xFFE0EDFF),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Container(
+                                                      height: 141,
+                                                      width: 361,
+                                                      decoration: BoxDecoration(
+                                                        border: Border.all(
+                                                            color: Color(
+                                                                0xFFE4E7EC)),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                                8),
+                                                      ),
+                                                      child: Column(
+                                                        children: [
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Row(
+                                                              children: [
+                                                                Center(
+                                                                    child: Text(
+                                                                  formatDate(
+                                                                      attendance!
+                                                                          .checkin),
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          14,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w400,
+                                                                      color: Color(
+                                                                          0xFF030303),
+                                                                      fontFamily:
+                                                                          'Poppins'),
+                                                                )),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .only(
+                                                                    top: 7.0,
+                                                                    left: 10),
+                                                            child: Row(
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .center,
+                                                                  children: [
+                                                                    Center(
+                                                                        child:
+                                                                            Text(capitalize(attendance.checkinmedium),
+                                                                      style: TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                          fontWeight:
+                                                                              FontWeight
+                                                                                  .w400,
+                                                                          color: Color(
+                                                                              0xFF004AAD),
+                                                                          fontFamily:
+                                                                              'Poppins'),
+                                                                    )),
+                                                                  ],
+                                                                ),
+
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 20.0,
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              'In & Out',
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF98A2B3),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 10.0,
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              "${formatedTime(attendance.checkintime)} - ${attendance.checkouttime.isEmpty ? " " : formatedTime(attendance.checkouttime)}",
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF030303),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                              SizedBox(
+                                                                width: 60,
+                                                              ),
+                                                              Column(
+                                                                crossAxisAlignment:
+                                                                    CrossAxisAlignment
+                                                                        .start,
+                                                                children: [
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 20.0,
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              'Total Hours',
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF98A2B3),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                  Padding(
+                                                                    padding: const EdgeInsets
+                                                                        .only(
+                                                                        top: 10.0,
+                                                                        left: 10),
+                                                                    child: Row(
+                                                                      children: [
+                                                                        Row(
+                                                                          mainAxisAlignment:
+                                                                              MainAxisAlignment.center,
+                                                                          children: [
+                                                                            Center(
+                                                                                child: Text(
+                                                                              attendance.checkouttime.isEmpty
+                                                                                  ? "0"
+                                                                                  : calculateTimeDifference(formatedTime(attendance.checkintime), formatedTime(attendance.checkouttime.isEmpty ? "00:00:00" : attendance.checkouttime)) + " Hours ",
+                                                                              style: TextStyle(
+                                                                                  color: Color(0xFF030303),
+                                                                                  fontSize: 12,
+                                                                                  fontFamily: 'Poppins'),
+                                                                            ))
+                                                                          ],
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ]),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : Center(child: Container());
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ));
   }
@@ -3425,13 +3561,8 @@ class _AttendanceselfState extends StateMVC<Attendanceself> {
                                         .checkout =
                                         _todateController
                                             .text;
-                                    _regularizeModel
-                                        .checkintime =
-                                        _checkin.text + ":00";
-                                    _regularizeModel
-                                        .checkouttime =
-                                        _checkout.text +
-                                            ":00";
+                                    _regularizeModel.checkintime =  _convertTo24HourFormat1(_checkin.text) ;
+                                    _regularizeModel.checkouttime =  _convertTo24HourFormat1(_checkout.text);
                                     _regularizeModel
                                         .comments =
                                         _comments.text;

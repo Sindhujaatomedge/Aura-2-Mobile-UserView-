@@ -17,6 +17,7 @@ class LeaveRequestByuserId {
   final String? createdBy;
   final DateTime? updatedAt;
   final String? updatedBy;
+  final String? primaryapprovercomment;
 
   LeaveRequestByuserId({
     required this.id,
@@ -34,6 +35,7 @@ class LeaveRequestByuserId {
     required this.attachment,
     required this.status,
     required this.createdAt,
+    required this.primaryapprovercomment,
     this.createdBy,
     this.updatedAt,
     this.updatedBy,
@@ -59,6 +61,7 @@ class LeaveRequestByuserId {
       createdBy: json['createdby'],
       updatedAt: json['updatedat'] != null ? DateTime.parse(json['updatedat']) : null,
       updatedBy: json['updatedby'],
+        primaryapprovercomment : json['primaryapprovercomment']
     );
   }
 }

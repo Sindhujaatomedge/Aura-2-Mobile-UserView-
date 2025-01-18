@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:sampleaura/model/response/checkintime.dart';
 import 'package:sampleaura/model/response/employeepermission.dart';
+import 'package:sampleaura/model/response/personaldeatils.dart';
 import 'package:sampleaura/model/response/upcomingbirthday.dart';
 import 'package:sampleaura/model/response/upcomingholiday.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -228,5 +229,57 @@ Future<RolePermission?> fetchpermission() async {
   }
   return null;
 
+}
+Future<PersonalDetails?> fetchEmployeePersonalDetails() async {
+  TokenModel? tokenModel = await TokenModel.loadFromPrefs();
+  String accessToken = tokenModel?.accessToken ?? '';
+  String refreshToken = tokenModel?.refreshToken ?? '';
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? rawString = prefs.getString('orgid');
+
+
+
+  String? orgId = rawString?.split(': ')[1].replaceAll('}', '').trim();
+
+  final body = {
+    'orgid': orgId,
+
+
+  };
+  final url = AppConstant().personaldeatils;
+  // final url = Uri.parse('http://192.168.29.232:8080/getmembersbyorgid');  // Replace with your API URL
+  // final url = Uri.parse('http://3.110.95.121:8080/getmembersbyorgid');  // Replace with your API URL
+
+  try {
+    final response = await http.post(Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Token': accessToken,
+        'Refresh-Token': refreshToken
+      },
+      body: json.encode(body),
+    );
+    print(json.encode(body));
+    print(response.body);
+
+    if (response.statusCode == 200) {
+      print(response.body);
+
+      // List<dynamic> jsonData = json.decode(response.body);
+      // return jsonData.map((data) => Presenttodaycount.fromJson(data)).toList();
+      Map<String, dynamic> jsonResponse = json.decode(response.body);
+      return PersonalDetails.fromJson(jsonResponse);
+    }
+    else {
+      print('Error: No valid data found in response');
+
+    }
+    return null;
+
+  } catch (e) {
+    print('Error fetching roles: $e');
+
+  }
 }
 

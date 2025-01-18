@@ -13,6 +13,8 @@ class AttendanceRequestLog {
   final String status;
   final String approver_type;
 
+
+
   AttendanceRequestLog(
       {
         required this.id,

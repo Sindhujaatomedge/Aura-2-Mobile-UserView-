@@ -1,7 +1,12 @@
+import 'dart:io';
+
 import 'package:buttons_tabbar/buttons_tabbar.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
 import 'package:sampleaura/controller/homapage.dart';
@@ -40,6 +45,8 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
   String from_date = '';
   DateTime? _toselectedDate;
   String to_date = '';
+  String? _fileName;
+  String? _filePath;
   List<LeaveTypeDropdownValue> leavetype = [];
   List<MemberDropdown> membervalue= [];
   final _leaveformkey = GlobalKey<FormState>();
@@ -54,6 +61,11 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
   bool? create = false;
   bool? leaveedit = false;
   bool? leavedelete = false;
+  File? file;
+  String? fileName;
+  String? fileNameWithExtension;
+  File? selectedFile;
+  File? selectedFileName;
   //
   // _SelfLeaveRequestState() : super(LeaveRequestController()) {
   //   _con = controller as LeaveRequestController?;
@@ -105,6 +117,75 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
       }
     });
   }
+
+
+
+
+  // Future<void> pickFile() async {
+  //   print('testing');
+  //   // FilePickerResult? result = await FilePicker.platform.pickFiles();
+  //   // if (result != null) {
+  //   //   // Get the file path for mobile platforms
+  //   //   String? filePath = result.files.single.path;
+  //   //   String? fileName = result.files.single.name;
+  //   //
+  //   //   if (filePath != null) {
+  //   //     selectedFile = File(filePath);
+  //   //     selectedFileName = File(fileName);
+  //   //     print("Selected File Path: $filePath");
+  //   //     print("Selected File Name: $fileName");
+  //   //     print(selectedFile);
+  //   //     print(selectedFileName);
+  //   //   }
+  //   // } else {
+  //   //   print("No file selected");
+  //   // }
+  //   FilePickerResult? result = await FilePicker.platform.pickFiles(
+  //     type: FileType.any,
+  //     allowMultiple: false,
+  //   );
+  //   if( result != null && result.files.isNotEmpty){
+  //     setState((){
+  //       selectedFile = File(result.files.single.path!);
+  //       print(' Selected File : $selectedFile');
+  //        setState(() {
+  //          fileName = result.files.single.name;
+  //        });
+  //        print('Selected File : $fileName');
+  //     });
+  //   }
+  // }
+
+
+  Future<void> pickFile() async {
+    print('Pick File Function Called');
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      String? path = result.files.single.path;
+      String? name = result.files.single.name;
+
+      if (path != null && name != null) {
+        setState(() {
+          selectedFile = File(path); // Update the selected file
+          fileName = name; // Update the file name
+        });
+
+        print('File Name set in setState: $fileName');
+      }
+    } else {
+      print("No file selected");
+    }
+  }
+
+
+
+
+
+
   Future<void> _loadpermission()async {
     await homepagecontroller?.fetchrolepermission();
     print(homepagecontroller?.permission?.permission?.self);
@@ -174,11 +255,18 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
   }
 
   Future<void> _fromselectDate(BuildContext context) async {
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+
+    // Calculate the date three months from now
+    DateTime lastSelectableDate = currentDate.add(Duration(days: 90)); // 3 months ahead
+    DateTime firstSelectableDate = currentDate.subtract(Duration(days: 92));
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _fromselectedDate ?? DateTime.now(), // Use current date if `_fromselectedDate` is null
-      firstDate: DateTime(2000), // Earliest selectable date
-      lastDate: DateTime(2100), // Latest selectable date
+      initialDate: _fromselectedDate ?? currentDate, // Use current date if _fromselectedDate is null
+      firstDate: firstSelectableDate, // Earliest selectable date
+      lastDate: lastSelectableDate, // Latest selectable date (3 months from today)
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -206,17 +294,25 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
 
       from_date = DateFormat('yyyy-MM-dd').format(picked); // Update the `from_date` variable
       print("Selected Date: $from_date");
-      _fromdateController.text = from_date;
-      // Log the selected date
+      _fromdateController.text = from_date; // Set the selected date in the controller
     }
   }
 
+
   Future<void> _toselectDate(BuildContext context) async {
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+
+    // Calculate the date three months from now
+    DateTime lastSelectableDate = currentDate.add(Duration(days: 90)); // 3 months ahead
+    DateTime firstSelectableDate = currentDate.subtract(Duration(days: 92)); // 3 months from today as the earliest selectable date
+
     final DateTime? picked = await showDatePicker(
+
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000), // Earliest date allowed
-      lastDate: DateTime(2100),
+      initialDate: _toselectedDate ?? currentDate, // Default to the selected date or current date
+      firstDate: firstSelectableDate, // Earliest selectable date (90 days from today)
+      lastDate: lastSelectableDate, // Latest selectable date (3 months from today)
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -233,28 +329,74 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
           ),
           child: child!,
         );
-      }, // Latest date allowed
+      },
     );
 
     if (picked != null && picked != _toselectedDate) {
       setState(() {
-        _toselectedDate = picked;
-        _todateController.text = DateFormat('yyyy-MM-dd').format(picked);
-
+        _toselectedDate = picked; // Update the state with the selected date
+        _todateController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the controller
       });
-      to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!);
 
-      print(to_date);
-      "Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}";
+      to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!); // Update the to_date variable
+
+      print("Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}"); // Log the selected date
     }
   }
 
+
+  // Future<void> _fromeditselectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //
+  //     context: context,
+  //
+  //     initialDate: _fromselectedDate ?? DateTime.now(), // Use current date if `_fromselectedDate` is null
+  //     firstDate: DateTime(2000), // Earliest selectable date
+  //     lastDate: DateTime(2100), // Latest selectable date
+  //     builder: (BuildContext context, Widget? child) {
+  //       return Theme(
+  //         data: ThemeData.light().copyWith(
+  //           primaryColor: Color(0xFF004AAD), // Header background color
+  //           colorScheme: ColorScheme.light(
+  //             primary: Color(0xFF004AAD), // Selected date and header text color
+  //           ),
+  //           dialogBackgroundColor: Colors.white, // Picker background color
+  //           textButtonTheme: TextButtonThemeData(
+  //             style: TextButton.styleFrom(
+  //               foregroundColor: Color(0xFF004AAD), // Button text color
+  //             ),
+  //           ),
+  //         ),
+  //         child: child!,
+  //       );
+  //     },
+  //   );
+  //
+  //   if (picked != null) {
+  //     setState(() {
+  //       _fromselectedDate = picked;
+  //       _fromdateeditController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the TextFormField with the selected date
+  //     });
+  //
+  //     from_date = DateFormat('yyyy-MM-dd').format(picked); // Update the `from_date` variable
+  //     print("Selected Date: $from_date");
+  //     _fromdateController.text = from_date;
+  //     // Log the selected date
+  //   }
+  // }
   Future<void> _fromeditselectDate(BuildContext context) async {
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+
+    // Calculate the date 90 days ago and 90 days in the future
+    DateTime firstSelectableDate = currentDate.add(Duration(days: 90)); // 90 days before today
+    DateTime lastSelectableDate = currentDate.subtract(Duration(days: 90)); // 90 days ahead
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _fromselectedDate ?? DateTime.now(), // Use current date if `_fromselectedDate` is null
-      firstDate: DateTime(2000), // Earliest selectable date
-      lastDate: DateTime(2100), // Latest selectable date
+      initialDate: _fromselectedDate ?? currentDate, // Use current date if `_fromselectedDate` is null
+      firstDate: firstSelectableDate, // Earliest selectable date (90 days before today)
+      lastDate: lastSelectableDate, // Latest selectable date (90 days from today)
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -276,23 +418,67 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
 
     if (picked != null) {
       setState(() {
-        _fromselectedDate = picked;
-        _fromdateeditController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the TextFormField with the selected date
+        _fromselectedDate = picked; // Update the selected date
+        _fromdateeditController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the controller text
+        from_date = DateFormat('yyyy-MM-dd').format(picked); // Update the from_date variable
       });
 
-      from_date = DateFormat('yyyy-MM-dd').format(picked); // Update the `from_date` variable
-      print("Selected Date: $from_date");
-      _fromdateController.text = from_date;
       // Log the selected date
+      print("Selected Date: $from_date");
     }
   }
 
+
+  // Future<void> _toeditselectDate(BuildContext context) async {
+  //   final DateTime? picked = await showDatePicker(
+  //     context: context,
+  //     initialDate: DateTime.now(),
+  //     firstDate: DateTime(2000), // Earliest date allowed
+  //     lastDate: DateTime(2100),
+  //     builder: (BuildContext context, Widget? child) {
+  //       return Theme(
+  //         data: ThemeData.light().copyWith(
+  //           primaryColor: Color(0xFF004AAD), // Header background color
+  //           colorScheme: ColorScheme.light(
+  //             primary: Color(0xFF004AAD), // Selected date and header text color
+  //           ),
+  //           dialogBackgroundColor: Colors.white, // Picker background color
+  //           textButtonTheme: TextButtonThemeData(
+  //             style: TextButton.styleFrom(
+  //               foregroundColor: Color(0xFF004AAD), // Button text color
+  //             ),
+  //           ),
+  //         ),
+  //         child: child!,
+  //       );
+  //     }, // Latest date allowed
+  //   );
+  //
+  //   if (picked != null && picked != _toselectedDate) {
+  //     setState(() {
+  //       _toselectedDate = picked;
+  //       _todateeditController.text = DateFormat('yyyy-MM-dd').format(picked);
+  //
+  //     });
+  //     to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!);
+  //
+  //     print(to_date);
+  //     "Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}";
+  //   }
+  // }
   Future<void> _toeditselectDate(BuildContext context) async {
+    // Get the current date
+    DateTime currentDate = DateTime.now();
+
+    // Calculate the date 90 days ago and 90 days in the future
+    DateTime firstSelectableDate = currentDate.add(Duration(days: 90)); // 90 days before today
+    DateTime lastSelectableDate = currentDate.subtract(Duration(days: 90)); // 90 days ahead
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000), // Earliest date allowed
-      lastDate: DateTime(2100),
+      initialDate: _toselectedDate ?? currentDate, // Use current date if `_toselectedDate` is null
+      firstDate: firstSelectableDate, // Earliest selectable date (90 days before today)
+      lastDate: lastSelectableDate, // Latest selectable date (90 days from today)
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -309,24 +495,27 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
           ),
           child: child!,
         );
-      }, // Latest date allowed
+      },
     );
 
     if (picked != null && picked != _toselectedDate) {
       setState(() {
         _toselectedDate = picked;
-        _todateeditController.text = DateFormat('yyyy-MM-dd').format(picked);
-
+        _todateeditController.text = DateFormat('yyyy-MM-dd').format(picked); // Update the controller with selected date
       });
-      to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!);
 
+      to_date = DateFormat('yyyy-MM-dd').format(_toselectedDate!); // Update the `to_date` variable
+
+      // Log the selected date
       print(to_date);
-      "Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}";
+      print("Selected Date: ${DateFormat('yyyy-MM-dd').format(_toselectedDate!)}");
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    print('Building UI with fileName: $fileName');
     return Material(
       color: const Color(0xFFF9FAFB),
       child: Scaffold(
@@ -370,8 +559,9 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                           heightFactor: 0.88,
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
-                            child: StatefulBuilder(
-                              builder: (BuildContext context, setModalState) {
+                            child:
+                            StatefulBuilder(
+                              builder: (BuildContext context, setModalState,) {
                                 return SingleChildScrollView(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -615,11 +805,11 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                       setModalState(() {
                                                                         modalSelectedItem =
                                                                             value; // Update the selected ID
-                                                                        print(
-                                                                            "Selected ID: $modalSelectedItem");
-                                                                        _con?.viewLeavebalance(modalSelectedItem!);
+                                                                        print("Selected ID: $modalSelectedItem");
+
                                                                         print(_con?.balance);// Debugging
                                                                       });
+                                                                      _con?.viewLeavebalance(modalSelectedItem!);
                                                                     },
                                                                   ),
                                                                 ),
@@ -1059,7 +1249,13 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                               fontFamily:
                                                                               'Poppins')),
                                                                       TextButton(
-                                                                          onPressed: () {},
+                                                                          onPressed: () {
+                                                                            print("Testing");
+                                                                            setModalState ((){
+                                                                              pickFile();
+                                                                            });
+
+                                                                          },
                                                                           child: Text(
                                                                             "Browse",
                                                                             style: TextStyle(
@@ -1077,7 +1273,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                 ),
                                                                 Center(
                                                                   child: Text(
-                                                                    'supports:doc,.jpg,png,pdf upto 10MB',
+                                                                    'supports:doc,docx,pdf upto 10MB',
                                                                     style: TextStyle(
                                                                         fontFamily: 'Poppins',
                                                                         color:
@@ -1092,6 +1288,93 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                       ),
                                                     ],
                                                   ),
+                                                  SizedBox(height:10),
+                                                  SizedBox(
+                                                      height: 10),
+                                                  Padding(
+                                                    padding:
+                                                        const EdgeInsets
+                                                            .only(
+                                                            left:
+                                                                15.0),
+                                                    child: Text(
+                                                      "Attachment",
+                                                      style: TextStyle(
+                                                          fontSize:
+                                                              12,
+                                                          fontFamily:
+                                                              'Poppins',
+                                                          color: Color(
+                                                              0xFF98A2B3)),
+                                                    ),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  fileName != null && fileName!.isNotEmpty
+                                                      ? Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Container(
+                                                        width: 155,
+                                                        height: 55,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius: BorderRadius.circular(5),
+                                                          border: Border.all(
+                                                            color: Color(0xFFE9E9E9),
+                                                          ),
+                                                        ),
+                                                        child: Row(
+                                                          mainAxisAlignment: MainAxisAlignment.start,
+                                                          children: [
+                                                            Padding(
+                                                              padding: const EdgeInsets.only(left: 5.0),
+                                                              child: Image.asset(
+                                                                'assets/images/document.png',
+                                                                height: 22,
+                                                                width: 22,
+                                                                color: Color(0xFF98A2B3),
+                                                              ),
+                                                            ),
+                                                            SizedBox(width: 10),
+                                                            Column(
+                                                              mainAxisAlignment: MainAxisAlignment.start,
+                                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                                              children: [
+                                                                Padding(
+                                                                  padding: const EdgeInsets.only(top: 8.0),
+                                                                  child: Text(fileName!, // Display the file name
+                                                                    style: TextStyle(
+                                                                      fontSize: 12,
+                                                                      fontWeight: FontWeight.w400,
+                                                                      fontFamily: 'Poppins',
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                Padding(
+                                                                  padding: const EdgeInsets.only(right: 10),
+                                                                  child: Text(
+                                                                    "100kb", // You can adjust the file size calculation here
+                                                                    style: TextStyle(
+                                                                      fontSize: 10,
+                                                                      fontWeight: FontWeight.w400,
+                                                                      fontFamily: 'Poppins',
+                                                                      color: Color(0xFF98A2B3),
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )
+                                                      : Container(),// If no file is selected, show nothing
+
+
+
+
                                                   SizedBox(
                                                     height: 15,
                                                   ),
@@ -1166,7 +1449,11 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                   _leaveRequestModel
                                                                       .leave_duration =
                                                                       modalSelectedItems;
+                                                                  _leaveRequestModel.file = selectedFile;
+                                                                  print(selectedFileName);
+                                                                  print(_leaveRequestModel.file);
                                                                   _leaveRequestModel.behalf=modalSelected;
+                                                                  print(_leaveRequestModel.file);
                                                                   print(_leaveRequestModel
                                                                       .start_date);
                                                                   print(_leaveRequestModel
@@ -1949,6 +2236,9 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                               _leaveRequestModel
                                                   .leave_duration =
                                                   modalSelectedItems;
+                                              _leaveRequestModel.file = selectedFileName;
+                                              print(selectedFileName);
+                                              print(_leaveRequestModel.file);
                                               print(_leaveRequestModel
                                                   .start_date);
                                               print(_leaveRequestModel
@@ -2011,58 +2301,58 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
         body: Column(
           children: [
             // Search and Filter Row
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Row(
-                children: [
-                  // Search Container
-                  Container(
-                    height: 45,
-                    width: 295,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Row(
-                      children: const [
-                        Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Icon(Icons.search,
-                                  color: Color(0xFF98A2B3), size: 20),
-                              SizedBox(width: 2),
-                              Padding(
-                                padding: EdgeInsets.only(left: 8.0),
-                                child: Text(
-                                  'Search',
-                                  style: TextStyle(
-                                    color: Color(0xFF98A2B3),
-                                    fontSize: 12,
-                                    fontFamily: 'Poppins',
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // Filter Button
-                  Container(
-                    height: 40,
-                    width: 35,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black12),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Image.asset('assets/images/filter.png'),
-                  ),
-                ],
-              ),
-            ),
+            // Padding(
+            //   padding: const EdgeInsets.all(10.0),
+            //   child: Row(
+            //     children: [
+            //       // Search Container
+            //       Container(
+            //         height: 45,
+            //         width: 295,
+            //         decoration: BoxDecoration(
+            //           border: Border.all(color: Colors.black12),
+            //           borderRadius: BorderRadius.circular(4),
+            //         ),
+            //         child: Row(
+            //           children: const [
+            //             Padding(
+            //               padding: EdgeInsets.all(8.0),
+            //               child: Row(
+            //                 children: [
+            //                   Icon(Icons.search,
+            //                       color: Color(0xFF98A2B3), size: 20),
+            //                   SizedBox(width: 2),
+            //                   Padding(
+            //                     padding: EdgeInsets.only(left: 8.0),
+            //                     child: Text(
+            //                       'Search',
+            //                       style: TextStyle(
+            //                         color: Color(0xFF98A2B3),
+            //                         fontSize: 12,
+            //                         fontFamily: 'Poppins',
+            //                       ),
+            //                     ),
+            //                   ),
+            //                 ],
+            //               ),
+            //             ),
+            //           ],
+            //         ),
+            //       ),
+            //       const SizedBox(width: 10),
+            //       // Filter Button
+            //       Container(
+            //         height: 40,
+            //         width: 35,
+            //         decoration: BoxDecoration(
+            //           border: Border.all(color: Colors.black12),
+            //           borderRadius: BorderRadius.circular(4),
+            //         ),
+            //         child: Image.asset('assets/images/filter.png'),
+            //       ),
+            //     ],
+            //   ),
+            // ),
             // Tabs and TabBarView
             DefaultTabController(
               length: 4,
@@ -2105,10 +2395,16 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                          ):
                          _con!.leaveuserdata.isEmpty?  Container(
                            child: Center(
-                             child: SvgPicture.asset(
-                               'assets/images/norecord.svg',
+                             child: Column(
+                               mainAxisAlignment: MainAxisAlignment.center, // Centers the column vertically
+                               children: [
+                                 SvgPicture.asset(
+                                   'assets/images/norecord.svg',
+                                 ),
+                                 Text("No Record Found",style: TextStyle(fontFamily: 'Poppins',fontSize: 12),)
+                               ],
                              ),
-                           ),
+                           )
                          )
                          :ListView.builder(
                             controller: scrollController,
@@ -2253,7 +2549,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                   right: 30,
                                                                   child:
                                                                       Container(
-                                                                    height: 28,
+                                                                    height: 50,
                                                                     width: 110,
                                                                     decoration: BoxDecoration(
                                                                         color: getStatusColor(userleave.status),
@@ -2261,13 +2557,16 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                                             BorderRadius.circular(
                                                                                 4)),
                                                                     child: Center(
-                                                                        child: Text(
-                                                                            capitalize(userleave.status),
-                                                                            style: TextStyle(
-                                                                                fontFamily: 'Poppins',
-                                                                                fontSize: 12,
-                                                                                fontWeight: FontWeight.w400,
-                                                                                color: Colors.white))),
+                                                                        child: Padding(
+                                                                          padding: const EdgeInsets.all(8.0),
+                                                                          child: Text(
+                                                                              capitalize(userleave.status),
+                                                                              style: TextStyle(
+                                                                                  fontFamily: 'Poppins',
+                                                                                  fontSize: 12,
+                                                                                  fontWeight: FontWeight.w400,
+                                                                                  color: Colors.white)),
+                                                                        )),
                                                                   ),
                                                                   // child: ElevatedButton.icon(
                                                                   //
@@ -2361,7 +2660,7 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                         SizedBox(height: 16),
                                                         Center(
                                                           child: Container(
-                                                            height: 112,
+                                                            height: 70,
                                                             width: 321,
                                                             decoration: BoxDecoration(
                                                                 border: Border.all(
@@ -2379,6 +2678,47 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                               child: Text(
                                                                   userleave
                                                                       .reason),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 16),
+
+                                                        Padding(
+                                                          padding:
+                                                          const EdgeInsets
+                                                              .only(
+                                                              left: 15.0),
+                                                          child: Text(
+                                                            "Approver Comments",
+                                                            style: TextStyle(
+                                                                fontSize: 12,
+                                                                fontFamily:
+                                                                'Poppins',
+                                                                color: Color(
+                                                                    0xFF98A2B3)),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 10,),
+                                                        Center(
+                                                          child: Container(
+                                                            height: 70,
+                                                            width: 321,
+                                                            decoration: BoxDecoration(
+                                                                border: Border.all(
+                                                                    color: Color(
+                                                                        0xFFE4E7EC)),
+                                                                borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                    10)),
+                                                            child: Padding(
+                                                              padding:
+                                                              const EdgeInsets
+                                                                  .all(8.0),
+                                                              //child: Text(leaverequest.reason,),
+                                                              child: Text(
+                                                                  userleave
+                                                                      .primaryapprovercomment!),
                                                             ),
                                                           ),
                                                         ),
@@ -2555,12 +2895,12 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                               ),
                                             ),
                                             Positioned(
-                                              top: 118,
+                                              top: 115,
                                               left: 15,
 
                                               child: Container(
                                                 height: 28,
-                                                width: 110,
+                                                width: 150,
                                                 decoration: BoxDecoration(
                                                     color: getStatusColor(userleave?.status),
                                                     borderRadius:
@@ -3115,6 +3455,46 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                           ),
                                                         ),
                                                       ),
+                                                      Padding(
+                                                        padding:
+                                                        const EdgeInsets
+                                                            .only(
+                                                            left: 15.0),
+                                                        child: Text(
+                                                          "Approver Comments",
+                                                          style: TextStyle(
+                                                              fontSize: 12,
+                                                              fontFamily:
+                                                              'Poppins',
+                                                              color: Color(
+                                                                  0xFF98A2B3)),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 10,),
+                                                      Center(
+                                                        child: Container(
+                                                          height: 70,
+                                                          width: 321,
+                                                          decoration: BoxDecoration(
+                                                              border: Border.all(
+                                                                  color: Color(
+                                                                      0xFFE4E7EC)),
+                                                              borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                  10)),
+                                                          child: Padding(
+                                                            padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                            //child: Text(leaverequest.reason,),
+                                                            child: Text(
+                                                                userleave
+                                                                    .primaryapprovercomment!),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      SizedBox(height: 10),
                                                       SizedBox(height: 10),
                                                       Padding(
                                                         padding:
@@ -3778,6 +4158,46 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                         ),
                                                       ),
                                                     ),
+                                                    Padding(
+                                                      padding:
+                                                      const EdgeInsets
+                                                          .only(
+                                                          left: 15.0),
+                                                      child: Text(
+                                                        "Approver Comments",
+                                                        style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontFamily:
+                                                            'Poppins',
+                                                            color: Color(
+                                                                0xFF98A2B3)),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 10,),
+                                                    Center(
+                                                      child: Container(
+                                                        height: 70,
+                                                        width: 321,
+                                                        decoration: BoxDecoration(
+                                                            border: Border.all(
+                                                                color: Color(
+                                                                    0xFFE4E7EC)),
+                                                            borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                10)),
+                                                        child: Padding(
+                                                          padding:
+                                                          const EdgeInsets
+                                                              .all(8.0),
+                                                          //child: Text(leaverequest.reason,),
+                                                          child: Text(
+                                                              userleave
+                                                                  .primaryapprovercomment!),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    SizedBox(height: 10),
                                                     SizedBox(height: 10),
                                                     Padding(
                                                       padding:
@@ -4376,6 +4796,46 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
                                                       ),
                                                     ),
                                                   ),
+                                                  Padding(
+                                                    padding:
+                                                    const EdgeInsets
+                                                        .only(
+                                                        left: 15.0),
+                                                    child: Text(
+                                                      "Approver Comments",
+                                                      style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontFamily:
+                                                          'Poppins',
+                                                          color: Color(
+                                                              0xFF98A2B3)),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10,),
+                                                  Center(
+                                                    child: Container(
+                                                      height: 70,
+                                                      width: 321,
+                                                      decoration: BoxDecoration(
+                                                          border: Border.all(
+                                                              color: Color(
+                                                                  0xFFE4E7EC)),
+                                                          borderRadius:
+                                                          BorderRadius
+                                                              .circular(
+                                                              10)),
+                                                      child: Padding(
+                                                        padding:
+                                                        const EdgeInsets
+                                                            .all(8.0),
+                                                        //child: Text(leaverequest.reason,),
+                                                        child: Text(
+                                                            userleave
+                                                                .primaryapprovercomment!),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  SizedBox(height: 10),
                                                   SizedBox(height: 10),
                                                   Padding(
                                                     padding:
@@ -5449,6 +5909,10 @@ class _SelfLeaveRequestState extends StateMVC<SelfLeaveRequest> {
  Color?  getStatusColor(String? status) {
     switch(status){
       case 'pending':
+        {
+          return Color(0xFFF1BB5B);
+        }
+      case 'partially-approved':
         {
           return Color(0xFFF1BB5B);
         }

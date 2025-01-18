@@ -4,6 +4,7 @@ import 'package:sampleaura/repo/holiday_repository.dart' as repo;
 
 class HolidayController extends ControllerMVC{
   List<HolidayModel> holidaylist = [];
+  bool isLoading = true;
 
 
   HolidayController(){
@@ -14,6 +15,7 @@ class HolidayController extends ControllerMVC{
     List<HolidayModel>? value = await repo.fetchHoliday();
     print(value?.length);
     setState((){
+      isLoading  = false;
       holidaylist = value ?? [];
     });
    // holidaylist = value ?? [];

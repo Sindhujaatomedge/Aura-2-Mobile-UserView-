@@ -62,7 +62,7 @@ Future<List<LeaveModel>?> fetchResponseData() async {
     throw Exception('Failed to fetch leave requests');
   }
 }
-Future<List<LeaveModel>?> approve(String id, LeaveModel leavedata) async {
+Future<List<LeaveModel>?> approve(String id, LeaveModel leavedata,String approverComments) async {
   try {
 
     TokenModel? tokenModel = await TokenModel.loadFromPrefs();
@@ -85,7 +85,8 @@ Future<List<LeaveModel>?> approve(String id, LeaveModel leavedata) async {
       'orgid': orgId,
       'ids':[id],
       'type' : "primary",
-      'approvalstatus' : "approved"
+      'approvalstatus' : "approved",
+      "approvercomment" :approverComments
 
     };
     final url = AppConstant().leaveapproval;
@@ -455,8 +456,7 @@ Future<LeaveDetails?> fetchleavedetails(String id) async {
 
 
 
-
-Future<String> postdata(LeaveRequestModel leaverequestModel,BuildContext context) async {
+Future<String> postdata(LeaveRequestModel leaverequestModel, BuildContext context) async {
   print(leaverequestModel.leave_duration);
 
   TokenModel _tokenModel = TokenModel();
@@ -471,55 +471,73 @@ Future<String> postdata(LeaveRequestModel leaverequestModel,BuildContext context
     _tokenModel.orgid = orgId;
   }
 
-final url = AppConstant().leaverequest;
- //final url = Uri.parse('http://192.168.29.232:8080/leaverequest'); // Replace with your API URL
- // final url = Uri.parse('http://3.110.95.121:8080/leaverequest'); // Replace with your API URL
+  final url = AppConstant().leaverequest; // Replace with your API URL
 
   try {
     var request = http.MultipartRequest('POST', Uri.parse(url));
 
-
+    // Add fields to the request
     request.fields['orgid'] = _tokenModel.orgid!;
     request.fields['leave_type_id'] = leaverequestModel.leave_type_id!;
     request.fields['start_date'] = leaverequestModel.start_date!;
     request.fields['end_date'] = leaverequestModel.end_date!;
     request.fields['reason'] = leaverequestModel.reason!;
     request.fields['leave_duration'] = leaverequestModel.leave_duration!;
-   // request.fields['behalf'] = leaverequestModel.behalf!;
+
+    // Add headers
     request.headers['Access-Token'] = accessToken;
     request.headers['Refresh-Token'] = refreshToken;
 
+    // Add the file as an attachment
+    if (leaverequestModel.file != null) {
+      String fileName = leaverequestModel.file!.path.split('/').last;
+      request.files.add(
+        http.MultipartFile(
+          'attachment', // Field name expected by the backend
+          leaverequestModel.file!.readAsBytes().asStream(), // Convert file to bytes stream
+          leaverequestModel.file!.lengthSync(), // Length of the file
+          filename: fileName, // File name
+        ),
+      );
+    }
 
+    // Print request fields and headers
+    print('Request URL: $url');
+    print('Request Fields: ${request.fields}');
+    print('Request Headers: ${request.headers}');
+    if (request.files.isNotEmpty) {
+      for (var file in request.files) {
+        print('File Name: ${file.filename}, Field Name: ${file.field}');
+      }
+    }
+
+    // Send request
     var response = await request.send();
 
-
+    // Convert response to string for further processing
     String responseBody = await response.stream.bytesToString();
     print('Response body: $responseBody');
 
-
+    // Handle response based on status code
     if (response.statusCode == 202) {
-      final Map<String,dynamic> message = json.decode(responseBody);
+      final Map<String, dynamic> message = json.decode(responseBody);
       await Fluttertoast.showToast(
         msg: message['message'] ?? '',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.green,
         textColor: Colors.white,
-        timeInSecForIosWeb: 5
-
+        timeInSecForIosWeb: 5,
       );
-      Navigator.push(context,MaterialPageRoute(builder: (context) =>SelfLeaveRequest()));
-
-
-
-
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => SelfLeaveRequest()),
+      );
       print('Request successful');
       return responseBody;
-
-    }
-    else {
-      final Map<String,dynamic> message = json.decode(responseBody);
-      String? errormessage = message.values.firstWhere((value) => value is String,);
+    } else {
+      final Map<String, dynamic> message = json.decode(responseBody);
+      String? errormessage = message.values.firstWhere((value) => value is String, orElse: () => '');
       await Fluttertoast.showToast(
         msg: errormessage ?? '',
         toastLength: Toast.LENGTH_SHORT,
@@ -527,18 +545,15 @@ final url = AppConstant().leaverequest;
         backgroundColor: Colors.red,
         textColor: Colors.white,
       );
-
       print('Request failed with status: ${response.statusCode}');
-
       return responseBody;
     }
-
-
   } catch (e) {
     print('Error posting leave request: $e');
     return '{"error": "Please fill All Details "}'; // Return an error message
   }
 }
+
 Future<String> editdata(LeaveRequestModel leaverequestModel, String id,BuildContext context) async {
   print(leaverequestModel.leave_duration);
 

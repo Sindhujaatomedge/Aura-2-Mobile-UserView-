@@ -19,8 +19,8 @@ class _SplashscreenState extends State<Splashscreen> {
         const Duration(seconds: 3),
             () => Navigator.push(
           context,
-          // MaterialPageRoute(builder: (context) => Homepage(email)),
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+           MaterialPageRoute(builder: (context) => Homepage(email)),
+        //  MaterialPageRoute(builder: (context) => HomeScreen()),
         ));
   }
   @override

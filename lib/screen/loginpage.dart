@@ -526,7 +526,7 @@ class _LoginpageState extends State<Loginpage> {
                                   horizontal: 15.0, // Adjust horizontal padding
                                 ),
                                 errorStyle: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   fontFamily: 'Poppins',
                                   color: Color(0xFFDC897C),
                                 ),
@@ -632,7 +632,7 @@ class _LoginpageState extends State<Loginpage> {
                                   ),
 
                                 errorStyle: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   fontFamily: 'Poppins',
                                   color: Color(0xFFDC897C),
                                 ),
@@ -715,7 +715,7 @@ class _LoginpageState extends State<Loginpage> {
                                 ),
 
                                 errorStyle: const TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   fontFamily: 'Poppins',
                                   color: Color(0xFFDC897C),
                                 ),
@@ -804,9 +804,10 @@ class _LoginpageState extends State<Loginpage> {
                                       ),
 
                                       errorStyle: const TextStyle(
-                                        fontSize: 12,
+                                        fontSize: 10,
                                         fontFamily: 'Poppins',
                                         color: Color(0xFFDC897C),
+
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(4),
@@ -839,14 +840,7 @@ class _LoginpageState extends State<Loginpage> {
                                 TextButton(onPressed: (){}, child: const Text("Forget Password"))
                               ],
                             ),
-
-
-
-
-
                         ],
-
-
                     ],
                   ),
                 ),

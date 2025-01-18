@@ -1,5 +1,7 @@
 
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mvc_pattern/mvc_pattern.dart';
@@ -9,9 +11,11 @@ import 'package:sampleaura/controller/managehome.dart';
 import 'package:sampleaura/model/response/manageagedistribution.dart';
 import 'package:sampleaura/model/response/manageattendancedata.dart';
 import 'package:sampleaura/model/response/managetenure.dart';
+import 'package:sampleaura/widget/attendanceself.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../widget/dashboardcard.dart';
+import '../widget/manageshimmer.dart';
 
 
 
@@ -103,6 +107,11 @@ List<int>? value  =[];
     _loadEmployeeLeavingCount();
     _loadEmployeeFeedBackCount();
     _loadEmployeeTurnoverCount();
+    Timer(const Duration(seconds: 3), () {
+      setState(() {
+        managehomeController?.isLoading = false;
+      });
+    });
 
 }
  Future<void> _loadAttendanceData() async {
@@ -145,33 +154,47 @@ List<int>? value  =[];
 
 
   Future<void> _loadEmployeePresentEmployee() async {
+    // Initialize with defaults to avoid early access issues
     setState(() {
-      value =[0,0,0,0];
+      value = [0, 0, 0, 0];
+      percentage = [0.0, 0.0, 0.0, 0.0];
     });
-    print('Initial Value List: $value');
+
     // Call other methods
     await _loadEmployeeFeedBackCount();
     await _loadEmployeeLeavingCount();
     await managehomeController?.fetchPresenttodaycount();
-    percentage = [
-      (managehomeController?.presenttodaycount?.percentage ?? 0) / 100,
-      (managehomeController?.employeleavethismonth?.percentage ?? 0) / 100,
-      (managehomeController?.feedbacktotal?.totalfeedbackpercentage ?? 0) / 100,
-      (managehomeController?.turnover?.percentage ?? 0) / 100,
 
-    ];
-    print('Percentage List: $percentage');
+    // Check if data is null
+    if (managehomeController == null ||
+        managehomeController?.presenttodaycount == null ||
+        managehomeController?.employeleavethismonth == null ||
+        managehomeController?.feedbacktotal == null ||
+        managehomeController?.turnover == null) {
+      print('Error: Some properties in managehomeController are null');
+      return;
+    }
+
     setState(() {
+      percentage = [
+        (managehomeController?.presenttodaycount?.percentage ?? 0) / 100,
+        (managehomeController?.employeleavethismonth?.percentage ?? 0) / 100,
+        (managehomeController?.feedbacktotal?.totalfeedbackpercentage ?? 0) / 100,
+        (managehomeController?.turnover?.percentage ?? 0) / 100,
+      ];
+
       value = [
         managehomeController?.presenttodaycount?.totalpresentcount ?? 0,
         managehomeController?.employeleavethismonth?.count ?? 0,
         managehomeController?.feedbacktotal?.totalfeedbackcount ?? 0,
         managehomeController?.turnover?.totalempleavingthisyear ?? 0,
-
       ];
     });
+
+    print('Percentage List: $percentage');
     print('Value List: $value');
   }
+
   List<Color>backgroundColor =[Color(0xFFF0FDF7),Color(0xFFFEF7F7),Color(0xFFF0F6FF),Color(0xFFFDFBF1)];
   List<Color>progressColor =[Color(0xFF99CCB0),Color(0xFFF07575),Color(0xFF72A9F3),Color(0xFFD8C38C)];
 
@@ -209,9 +232,7 @@ List<int>? value  =[];
                   mainAxisSpacing: 10,
                 ),
                 itemBuilder: (BuildContext context, int index) {
-                  return  managehomeController!.isLoading ? Container(
-                    child: Center(child: CircularProgressIndicator()),
-                  ) :AttendanceCard(
+                  return  managehomeController!.isLoading ? ManageShimmer() : AttendanceCard(
                     title: title[index],
                     count: value![index].toString() ,
                     percentage: percentage[index],
@@ -235,7 +256,7 @@ List<int>? value  =[];
                       children: [
                         Container(
                           height: 206,
-                          width: 361,
+                          width: 355,
                           decoration: BoxDecoration(
                             border: Border.all(
                               width: 0.2,
@@ -339,7 +360,7 @@ List<int>? value  =[];
                     color: Colors.transparent,
                 child: Container(
                   height: 200,
-                  width: 361,
+                  width: 355,
                         decoration: BoxDecoration(
                           border: Border.all(
                             width: 0.2,
@@ -508,7 +529,7 @@ List<int>? value  =[];
                       children: [
                         Container(
                             height: 206,
-                            width: 361,
+                            width: 355,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 0.2,
@@ -614,7 +635,7 @@ List<int>? value  =[];
                       children: [
                         Container(
                             height: 206,
-                            width: 361,
+                            width: 355,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 0.2,
@@ -755,7 +776,7 @@ List<int>? value  =[];
                       children: [
                         Container(
                             height: 228,
-                            width: 361,
+                            width: 355,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 0.2,
@@ -799,7 +820,7 @@ List<int>? value  =[];
                                                   children: [
                                                     LinearPercentIndicator(
                                                       backgroundColor: Color(0xFFF8F8FF),
-                                                      width: MediaQuery.of(context).size.width - 70,
+                                                      width: 299,
                                                       animation: true,
                                                       lineHeight: 10.0,
                                                       animationDuration: 2000,
@@ -889,7 +910,7 @@ List<int>? value  =[];
                       children: [
                         Container(
                             height: 177,
-                            width: 361,
+                            width: 355,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 0.2,
@@ -977,7 +998,7 @@ List<int>? value  =[];
                       children: [
                         Container(
                             height: 206,
-                            width: 361,
+                            width: 355,
                             decoration: BoxDecoration(
                               border: Border.all(
                                 width: 0.2,

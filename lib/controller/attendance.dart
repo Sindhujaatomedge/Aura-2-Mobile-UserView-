@@ -147,13 +147,13 @@ class AttendanceController extends ControllerMVC {
 
   }
 
-  Future <void> approve(String id, AttendanceRequestLog attendancerequest)async {
+  Future <void> approve(String id, AttendanceRequestLog attendancerequest, String approvercomment)async {
+    print(approvercomment);
     setState((){
       isLoading = false;
 
     });
-    repository.approve(id,attendancerequest).then((value){
-
+    repository.approve(id,attendancerequest,approvercomment).then((value){
       setState((){
        repository.fetchResponseRequestData();
       });
